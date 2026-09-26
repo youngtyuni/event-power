@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#E8EBEE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F1317" media="(prefers-color-scheme: dark)">
 <meta name="description" content="Калькулятор электрики для мероприятий: хватит ли мощности, раскладка по фазам, разъём, кабель, генератор.">
 <title>Хватит ли мощности?</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -287,14 +289,69 @@ h1,h2,h3{font-family:var(--display);font-weight:600;letter-spacing:.01em;text-wr
 .term{color:inherit;text-decoration:underline dotted;text-underline-offset:3px;cursor:help}
 .foot{margin-top:20px;font-size:12.5px;color:var(--muted);max-width:80ch}
 
+.i{position:relative}
+.i::before{content:"";position:absolute;inset:-9px}
 .mbar{display:none}
 @media (max-width:980px){
-  .mbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:5;gap:10px;align-items:center;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:var(--panel);border-top:1px solid var(--line);box-shadow:0 -6px 20px rgba(0,0,0,.08)}
-  .mbar i{width:10px;height:10px;border-radius:50%;flex:none}
-  .mbar .mt{flex:1;min-width:0;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .mbar .mt b{font-family:var(--mono)}
-  .mbar a{flex:none;font-weight:600;color:var(--ink);font-size:14px}
-  body{padding-bottom:80px}
+  .mbar{display:flex;flex-direction:column;gap:8px;position:sticky;top:env(safe-area-inset-top,0px);z-index:6;margin:0 -16px 14px;padding:10px 16px 10px;background:var(--bg);border-bottom:1px solid var(--line);box-shadow:0 8px 18px -12px rgba(0,0,0,.35)}
+  .mb-sum{display:flex;align-items:center;gap:10px;border:1.5px solid var(--st,var(--line));background:var(--stbg,var(--panel));border-radius:10px;padding:8px 12px;cursor:pointer;text-align:left;width:100%;position:relative;overflow:hidden}
+  .mb-sum i{width:10px;height:10px;border-radius:50%;flex:none;background:var(--st,var(--faint))}
+  .mb-sum .mt{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.2}
+  .mb-sum .mt b{font-size:15px;font-weight:700;color:var(--st,var(--ink));text-transform:uppercase;letter-spacing:.04em;font-family:var(--body)}
+  .mb-sum .mt span{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mb-sum .mk-kw{font-family:var(--display);font-weight:700;font-size:28px;line-height:1;flex:none}
+  .mb-sum .mk-kw small{font-size:14px;font-weight:500;margin-left:2px}
+  .mbprog{position:absolute;left:0;bottom:0;height:3px;background:var(--st,var(--faint));transition:width .35s ease}
+  .mb-tabs{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:var(--panel-2)}
+  .mb-tabs button{border:0;background:none;min-height:38px;font-size:14px;font-weight:600;cursor:pointer;color:var(--muted)}
+  .mb-tabs button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+  .mbar[data-state="ok"]{--st:var(--ok);--stbg:var(--okbg)}
+  .mbar[data-state="tight"]{--st:var(--warn);--stbg:var(--warnbg)}
+  .mbar[data-state="over"]{--st:var(--bad);--stbg:var(--badbg)}
+  .mbar[data-state="gen"]{--st:var(--genc);--stbg:var(--genbg)}
+  body[data-tab="res"] .inputs{display:none}
+  body[data-tab="res"] .mb-sum{display:none}
+  body:not([data-tab="res"]) .results,body:not([data-tab="res"]) .gloss{display:none}
+  .masthead{padding-block:18px 12px}
+  body[data-tab="res"] .masthead p{display:none}
+  .results{gap:12px}
+}
+@media (max-width:620px){
+  .brand h1{font-size:28px;gap:10px}
+  .brand h1 .plug i{width:8px;height:20px}
+  .brand p{display:none}
+  .masthead{padding-block:14px 8px}
+  .block{padding:14px;gap:12px}
+  .block-h h2{font-size:20px}
+  .formats{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+  .fmt{padding:9px 10px;min-height:44px;justify-content:center}
+  .fmt small{display:none}
+  #srcSeg{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+  #srcSeg label{flex-direction:column;align-items:center;text-align:center;gap:4px;padding:10px 4px}
+  #srcSeg small{display:none}
+  #srcSeg b{font-size:13px;line-height:1.2}
+  .field input:not([type="range"]):not([type="checkbox"]):not([type="radio"]),.field select,.w input,.step input,.row input.nm{font-size:16px}
+  .row{grid-template-columns:minmax(0,1fr) 116px 30px;grid-template-areas:"n n x" "w s s";gap:6px 8px;padding:9px 0}
+  .step{grid-template-columns:42px 1fr 42px;height:40px}
+  .step button{font-size:20px}
+  .w{height:40px}
+  .rm{font-size:22px;width:30px;height:30px}
+  .row .nm{grid-area:n}.row .w{grid-area:w}.row .step{grid-area:s}.row .rm,.row .sp{grid-area:x}
+  .cat summary{gap:8px;padding:12px 10px;flex-wrap:nowrap}
+  .cat summary .cat-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .cat summary .cnt{display:none}
+  .rows{padding:2px 10px 6px}
+  .cat .addbtn{margin:0 10px 10px}
+  .card{padding:14px}
+  .v-head{font-size:22px}
+  .big{font-size:48px}
+  .big small{font-size:20px}
+  .spec-row{grid-template-columns:1fr;gap:4px}
+  .screen{padding:10px}
+  .screen-viz svg{max-height:150px}
+  .opt span{padding:8px 12px 8px 10px}
+  .seg.compact label{min-height:40px;align-items:center}
+  .gloss-grid{grid-template-columns:1fr}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -308,6 +365,11 @@ h1,h2,h3{font-family:var(--display);font-weight:600;letter-spacing:.01em;text-wr
       <p>Калькулятор электрики для мероприятий. Выберите формат, поправьте технику — и сразу видно, хватит ли площадки, как раскидать нагрузку по фазам и что заказать у подрядчика. Кружок <button type="button" class="i" data-info="about" aria-label="Как пользоваться подсказками">i</button> рядом с термином объясняет его простыми словами.</p>
     </div>
   </header>
+
+  <nav class="mbar" id="mbar" aria-label="Итог и разделы">
+    <button type="button" class="mb-sum" data-tab="res" aria-label="Открыть итог"><i></i><span class="mt" id="mbTxt"></span><span class="mk-kw" id="mbKw"></span><span class="mbprog" id="mbProg"></span></button>
+    <div class="mb-tabs" role="tablist"><button type="button" role="tab" data-tab="in" aria-selected="true">Параметры</button><button type="button" role="tab" data-tab="res" aria-selected="false">Итог и схема</button></div>
+  </nav>
 
   <main class="layout">
     <div class="inputs">
@@ -348,7 +410,7 @@ h1,h2,h3{font-family:var(--display);font-weight:600;letter-spacing:.01em;text-wr
 
       <section class="block" id="sec-src">
         <div class="block-h"><h2>Откуда электричество<button type="button" class="i" data-info="source" aria-label="Подробнее">i</button></h2><span class="aside">Спросите у площадки заранее</span></div>
-        <div class="seg" role="radiogroup" aria-label="Источник питания">
+        <div class="seg" id="srcSeg" role="radiogroup" aria-label="Источник питания">
           <input type="radio" name="src" id="src-socket" value="socket">
           <label for="src-socket">
             <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><circle cx="13" cy="13" r="11" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="9" cy="13" r="1.8" fill="currentColor"/><circle cx="17" cy="13" r="1.8" fill="currentColor"/></svg>
@@ -505,7 +567,6 @@ h1,h2,h3{font-family:var(--display);font-weight:600;letter-spacing:.01em;text-wr
   <div id="popB"></div>
 </div>
 
-<div class="mbar" id="mbar"><i id="mbDot"></i><span class="mt" id="mbTxt"></span><a href="#results">Итог ↓</a></div>
 
 <script>
 const $=s=>document.querySelector(s);
@@ -852,7 +913,7 @@ function renderEquip(keepOpen){
   box.innerHTML='';
   CATS.forEach(c=>{
     const d=document.createElement('details'); d.className='cat'; d.dataset.cat=c.id; d.style.setProperty('--cc',`var(--c-${c.id})`);
-    d.open=keepOpen?open.has(c.id):S.items[c.id].some(it=>+it.q>0);
+    d.open=keepOpen?open.has(c.id):(!isMobile()&&S.items[c.id].some(it=>+it.q>0));
     d.innerHTML=`<summary><span class="chip"></span><span class="cat-name">${c.name}</span><button type="button" class="cat-kc" data-info="kc_${c.id}" aria-label="Почему ×${c.kc}">×${String(c.kc).replace('.',',')}</button><span class="cat-sum" id="cs-${c.id}"></span><span class="caret"></span></summary>
       <div class="rows">${S.items[c.id].map((it,idx)=>rowHTML(c,it,idx)).join('')}</div>
       <button class="addbtn" type="button" data-add="${c.id}">+ Свой прибор</button>`;
@@ -948,7 +1009,7 @@ function compute(){
 /* ---------- render results ---------- */
 function render(){
   const R=compute();
-  CATS.forEach(c=>{const g=R.groups[c.id];$('#cs-'+c.id).innerHTML=g.count?`${g.count} шт · <b>${fmt(g.P/1000)}</b> кВт`:'—';});
+  CATS.forEach(c=>{const g=R.groups[c.id];$('#cs-'+c.id).innerHTML=g.count?`<span class="cnt">${g.count} шт · </span><b>${fmt(g.P/1000)}</b> кВт`:'—';});
   const v=$('#verdict'); v.dataset.state=R.status;
   const kW=R.P/1000, pk=R.nom/1000, kettles=Math.round(kW/2);
   const phW=R.nph===3?'самая загруженная фаза':'ток';
@@ -975,8 +1036,15 @@ function render(){
     <div class="legend">${R.G.filter(g=>g.P>0).map(g=>`<span><i style="background:var(--c-${g.id})"></i>${NAMES[g.id]} <b>${fmt(g.P/1000)}</b></span>`).join('')}${I('meter','Как читать шкалу')}</div>`}`;
   renderPhases(R); renderSchema(R); renderSpec(R); renderTips(R);
   const col={ok:'var(--ok)',tight:'var(--warn)',over:'var(--bad)',gen:'var(--genc)',empty:'var(--faint)'}[R.status];
-  $('#mbDot').style.background=col;
-  $('#mbTxt').innerHTML=`<b>${fmt(kW)} кВт</b> · ${pill}`;
+  const ratio=R.status==='empty'?0:R.status==='gen'?R.gen.load:R.maxI/R.availA;
+  $('#mbar').dataset.state=R.status;
+  const mbSub=R.status==='empty'?'Выберите формат или добавьте технику'
+    :R.status==='gen'?`генератор ${R.gen.count>1?R.gen.count+'×':''}${R.gen.size} кВА · загрузка ${Math.round(R.gen.load*100)}%`
+    :R.status==='over'?`нужно ${fmt(kW*(1+R.m),0)} кВт, есть ${fmt(R.availKW,0)} кВт`
+    :`${Math.round(ratio*100)}% от ${fmt(R.availKW,0)} кВт · ${R.status==='ok'?'запас есть':'без запаса'}`;
+  $('#mbTxt').innerHTML=`<b>${pill}</b><span>${mbSub}</span>`;
+  $('#mbKw').innerHTML=R.status==='empty'?'':`${fmt(kW)}<small>кВт</small>`;
+  $('#mbProg').style.width=Math.min(100,ratio*100).toFixed(1)+'%';
   window.__R=R;
 }
 
@@ -1157,6 +1225,17 @@ function summaryText(){
 
 /* ---------- events ---------- */
 function commit(){save();render();}
+const isMobile=()=>window.matchMedia('(max-width:980px)').matches;
+const tabScroll={in:0,res:0};
+function setTab(t){
+  const cur=document.body.dataset.tab||'in';
+  if(cur===t) {window.scrollTo(0,0);return;}
+  tabScroll[cur]=window.scrollY; document.body.dataset.tab=t; closePop();
+  document.querySelectorAll('.mb-tabs [data-tab]').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===t));
+  window.scrollTo(0,tabScroll[t]||0);
+}
+document.body.dataset.tab='in';
+$('#mbar').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(b)setTab(b.dataset.tab);});
 let rsT;window.addEventListener('resize',()=>{clearTimeout(rsT);rsT=setTimeout(render,150);});
 $('#formats').addEventListener('click',e=>{
   const b=e.target.closest('[data-fmt]'); if(!b) return;
@@ -1205,7 +1284,7 @@ eq.addEventListener('click',e=>{
 });
 document.addEventListener('click',e=>{
   const a=e.target.closest('a.term');if(!a)return;e.preventDefault();
-  const d=document.getElementById(a.dataset.g);if(!d)return;d.open=true;d.scrollIntoView({behavior:'smooth',block:'center'});
+  const d=document.getElementById(a.dataset.g);if(!d)return;if(isMobile())setTab('res');d.open=true;d.scrollIntoView({behavior:'smooth',block:'center'});
   d.classList.add('flash');setTimeout(()=>d.classList.remove('flash'),1400);
 });
 $('#copyBtn').addEventListener('click',()=>{
