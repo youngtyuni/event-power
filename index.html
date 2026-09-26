@@ -1,0 +1,1225 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Калькулятор электрики для мероприятий: хватит ли мощности, раскладка по фазам, разъём, кабель, генератор.">
+<title>Хватит ли мощности?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+img{max-width:100%}
+:root{
+  --bg:#E8EBEE; --panel:#FFFFFF; --panel-2:#F3F5F7; --line:#D2D8DE; --ink:#141A21; --muted:#56616D; --faint:#8C97A2;
+  --red:#C62A32; --blue:#1D5CB0; --focus:#1D5CB0;
+  --ok:#1C7A46; --okbg:#E2F2E8; --warn:#9A6B00; --warnbg:#FFF3CC; --bad:#BF2630; --badbg:#FBE3E4; --genc:#1D5CB0; --genbg:#E3ECF8;
+  --c-light:#D39A00; --c-screen:#6A4BCF; --c-video:#0E8A8A; --c-sound:#D24A12; --c-stage:#BF2A67; --c-sfx:#1591A8; --c-food:#8A6A3C; --c-climate:#3566C9; --c-misc:#6B7683;
+  --shadow:0 14px 36px rgba(20,26,33,.18);
+  --display:"Oswald","Arial Narrow",Impact,sans-serif;
+  --body:"Golos Text",-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0F1317; --panel:#171D23; --panel-2:#1E252C; --line:#2B343D; --ink:#E3E8ED; --muted:#98A4B0; --faint:#6A7682;
+    --red:#EF5B61; --blue:#5B95E6; --focus:#5B95E6;
+    --ok:#3DBA78; --okbg:#12291C; --warn:#E8B53A; --warnbg:#33290C; --bad:#F0626A; --badbg:#361517; --genc:#6FA3EE; --genbg:#14233A;
+    --c-light:#F0B72C; --c-screen:#9A7FF0; --c-video:#2EBDBD; --c-sound:#F2733A; --c-stage:#E9578F; --c-sfx:#3DBAD1; --c-food:#C29A62; --c-climate:#6E97EE; --c-misc:#97A3AF;
+    --shadow:0 14px 36px rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0F1317; --panel:#171D23; --panel-2:#1E252C; --line:#2B343D; --ink:#E3E8ED; --muted:#98A4B0; --faint:#6A7682;
+  --red:#EF5B61; --blue:#5B95E6; --focus:#5B95E6;
+  --ok:#3DBA78; --okbg:#12291C; --warn:#E8B53A; --warnbg:#33290C; --bad:#F0626A; --badbg:#361517; --genc:#6FA3EE; --genbg:#14233A;
+  --c-light:#F0B72C; --c-screen:#9A7FF0; --c-video:#2EBDBD; --c-sound:#F2733A; --c-stage:#E9578F; --c-sfx:#3DBAD1; --c-food:#C29A62; --c-climate:#6E97EE; --c-misc:#97A3AF;
+  --shadow:0 14px 36px rgba(0,0,0,.5);
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;padding-inline:16px;padding-block:0 40px}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.num,.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+h1,h2,h3{font-family:var(--display);font-weight:600;letter-spacing:.01em;text-wrap:balance;margin:0}
+.wrap{max-width:1320px;margin:0 auto}
+
+/* info dot */
+.i{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border-radius:50%;border:1.4px solid var(--faint);color:var(--muted);background:transparent;font:italic 700 11px/1 Georgia,"Times New Roman",serif;cursor:pointer;padding:0 0 1px;margin-left:6px;vertical-align:2px;flex:none;text-transform:none;letter-spacing:0}
+.i:hover,.i[aria-expanded="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.pop{position:absolute;z-index:30;width:min(340px,calc(100vw - 32px));background:var(--panel);color:var(--ink);border:1px solid var(--ink);border-radius:10px;padding:14px 16px 12px;box-shadow:var(--shadow);font-size:13.5px;line-height:1.45}
+.pop h4{margin:0 26px 6px 0;font-family:var(--display);font-size:17px;font-weight:600;letter-spacing:.01em}
+.pop p{margin:0 0 8px;color:var(--muted)}
+.pop p strong{color:var(--ink);font-weight:600}
+.pop .px{position:absolute;top:8px;right:8px;width:26px;height:26px;border:0;background:none;color:var(--muted);font-size:20px;line-height:1;cursor:pointer;border-radius:6px}
+.pop .px:hover{background:var(--panel-2);color:var(--ink)}
+@media (max-width:600px){.pop{position:fixed;left:0!important;right:0;bottom:0;top:auto!important;width:auto;border-radius:14px 14px 0 0;border-width:1px 0 0;padding-bottom:calc(18px + env(safe-area-inset-bottom,0px));max-height:70vh;overflow:auto}}
+
+/* header */
+.masthead{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 32px;padding-block:28px 20px}
+.brand{display:flex;flex-direction:column;gap:6px;max-width:66ch}
+.brand h1{font-size:40px;line-height:1.02;text-transform:uppercase;letter-spacing:.02em;display:flex;align-items:center;gap:12px}
+.brand h1 .plug{display:inline-flex;gap:3px;flex:none}
+.brand h1 .plug i{width:10px;height:26px;border-radius:2px;display:block}
+.brand p{margin:0;color:var(--muted)}
+@media (max-width:520px){.brand h1{font-size:30px}}
+
+/* layout */
+.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,460px);gap:24px;align-items:start}
+.inputs{display:flex;flex-direction:column;gap:16px;min-width:0}
+.results{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);display:flex;flex-direction:column;gap:14px;max-height:calc(100vh - 24px);overflow:auto;padding-bottom:4px;scrollbar-width:thin}
+@media (max-width:980px){.layout{grid-template-columns:minmax(0,1fr)}.results{position:static;max-height:none;overflow:visible}}
+
+.block{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:14px}
+.block-h{display:flex;justify-content:space-between;align-items:baseline;gap:6px 12px;flex-wrap:wrap}
+.block-h h2{font-size:22px;text-transform:uppercase}
+.block-h .aside{color:var(--muted);font-size:13px}
+.hint{color:var(--muted);font-size:13px;margin:0}
+.field{display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--muted);min-width:0}
+.lab{display:flex;align-items:center;min-height:18px}
+.field input:not([type="range"]):not([type="checkbox"]):not([type="radio"]),.field select{background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--ink);font-size:15px;width:100%}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.inline{display:flex;gap:6px}
+.inline input{flex:1;min-width:0}
+
+/* segmented */
+.seg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.seg.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg label{position:relative;display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:9px;padding:10px 12px;cursor:pointer;background:var(--panel-2);min-width:0;color:var(--ink)}
+.seg label:hover{border-color:var(--muted)}
+.seg input:checked + label{border-color:var(--ink);background:var(--panel);box-shadow:inset 0 0 0 1px var(--ink)}
+.seg input:focus-visible + label{outline:2px solid var(--focus);outline-offset:2px}
+.seg svg{flex:none;margin-top:2px}
+.seg b{display:block;font-weight:600;font-size:14px}
+.seg small{display:block;color:var(--muted);font-size:12px;line-height:1.3}
+.seg.compact label{padding:7px 8px;justify-content:center;text-align:center;font-size:14px}
+@media (max-width:560px){.seg:not(.compact){grid-template-columns:1fr}}
+.mini-seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex:none}
+.mini-seg button{border:0;background:var(--panel-2);padding:0 10px;cursor:pointer;font-size:13px}
+.mini-seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+
+/* template configurator */
+.formats{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.fmt{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;border:1px solid var(--line);background:var(--panel-2);border-radius:9px;padding:9px 11px;cursor:pointer;min-width:0}
+.fmt b{font-weight:600;font-size:14px}
+.fmt small{color:var(--muted);font-size:12px;line-height:1.3}
+.fmt:hover{border-color:var(--muted)}
+.fmt[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.fmt[aria-pressed="true"] small{color:var(--bg);opacity:.75}
+.cfg{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr);gap:14px}
+@media (max-width:760px){.cfg{grid-template-columns:1fr}}
+.range{display:flex;align-items:center;gap:12px;height:38px}
+.range input{flex:1;min-width:0;accent-color:var(--ink)}
+.range output{font-family:var(--mono);font-size:15px;color:var(--ink);min-width:62px;text-align:right;font-weight:700}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opt{position:relative;display:inline-flex}
+.opt input{position:absolute;opacity:0;pointer-events:none}
+.opt span{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:999px;padding:6px 12px 6px 9px;cursor:pointer;background:var(--panel-2);color:var(--muted);font-size:14px}
+.opt span::before{content:"";width:14px;height:14px;border-radius:4px;border:1.5px solid var(--faint);flex:none}
+.opt input:checked + span{color:var(--ink);border-color:var(--ink);background:var(--panel)}
+.opt input:checked + span::before{background:var(--ink);border-color:var(--ink);box-shadow:inset 0 0 0 2.5px var(--panel)}
+.opt input:focus-visible + span{outline:2px solid var(--focus);outline-offset:2px}
+.cfg-foot{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;min-height:22px}
+.cfg-foot .hint{flex:1;min-width:200px}
+.cfg-foot .hint b{color:var(--ink);font-weight:600}
+
+/* screens */
+.screens{display:flex;flex-direction:column;gap:12px}
+.screen{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:12px 16px;border:1px solid var(--line);border-radius:9px;padding:12px;background:var(--panel-2)}
+.screen .fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+.screen .fields .wide{grid-column:1/-1}
+.screen .fields input,.screen .fields select{background:var(--panel)!important}
+.screen-viz svg{width:100%;height:auto;display:block}
+.screen-stats{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--muted);align-items:center}
+.screen-stats b{color:var(--ink);font-family:var(--mono);font-weight:500}
+.screen-stats .x{margin-left:auto}
+@media (max-width:620px){.screen{grid-template-columns:1fr}}
+.linkbtn{border:0;background:none;color:var(--muted);cursor:pointer;padding:4px 0;font-size:13px;text-decoration:underline;text-underline-offset:3px}
+.linkbtn:hover{color:var(--ink)}
+.addbtn{align-self:flex-start;border:1px dashed var(--faint);background:none;border-radius:8px;padding:7px 12px;cursor:pointer;color:var(--muted);font-size:14px}
+.addbtn:hover{color:var(--ink);border-color:var(--ink)}
+
+/* equipment */
+.cats{display:flex;flex-direction:column;gap:8px}
+.cat{border:1px solid var(--line);border-radius:9px;background:var(--panel-2)}
+.cat summary{list-style:none;display:flex;align-items:center;gap:10px;padding:11px 12px;cursor:pointer}
+.cat summary::-webkit-details-marker{display:none}
+.cat summary .chip{width:12px;height:12px;border-radius:3px;background:var(--cc);flex:none}
+.cat summary .cat-name{font-weight:600}
+.cat summary .cat-kc{font-family:var(--mono);font-size:12px;color:var(--muted);border:1px solid var(--line);background:var(--panel);border-radius:5px;padding:1px 4px 1px 6px;cursor:pointer;display:inline-flex;align-items:center;gap:4px}
+.cat summary .cat-kc::after{content:"i";font:italic 700 10px/1 Georgia,serif;width:13px;height:13px;border-radius:50%;border:1.2px solid var(--faint);display:inline-flex;align-items:center;justify-content:center}
+.cat summary .cat-kc:hover{border-color:var(--ink);color:var(--ink)}
+.cat summary .cat-sum{margin-left:auto;white-space:nowrap;font-family:var(--mono);font-size:13px;color:var(--muted);text-align:right}
+.cat summary .cat-sum b{color:var(--ink);font-weight:500}
+.cat summary .caret{width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);margin:0 4px 3px 4px;transition:transform .15s;flex:none}
+.cat[open] summary .caret{transform:rotate(-135deg);margin-bottom:-3px}
+.cat[open] summary{border-bottom:1px solid var(--line)}
+.rows{display:flex;flex-direction:column;padding:4px 12px 8px}
+.row{display:grid;grid-template-columns:minmax(0,1fr) 104px 118px 22px;gap:8px;align-items:center;padding:5px 0;border-bottom:1px dashed var(--line)}
+.row:last-child{border-bottom:0}
+.row .nm{min-width:0;font-size:14px;color:var(--muted)}
+.row.on .nm{color:var(--ink)}
+.row input.nm{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:4px 8px;color:var(--ink)}
+.row .tag{display:none;font-family:var(--mono);font-size:11px;color:var(--red);border:1px solid var(--red);background:none;border-radius:4px;padding:0 4px;margin-left:6px;vertical-align:1px;cursor:pointer}
+.row.three .tag{display:inline-block}
+.w{display:flex;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding-right:8px}
+.w input{width:100%;min-width:0;border:0;background:none;padding:5px 4px 5px 8px;font-family:var(--mono);font-size:13px;text-align:right}
+.w span{font-size:12px;color:var(--muted)}
+.step{display:grid;grid-template-columns:32px 1fr 32px;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--panel)}
+.step button{border:0;background:var(--panel-2);cursor:pointer;font-size:17px;line-height:1;padding:0}
+.step button:hover{background:var(--line)}
+.step input{border:0;background:none;width:100%;min-width:0;text-align:center;font-family:var(--mono);padding:5px 0;-moz-appearance:textfield}
+.row.on .step input{font-weight:700}
+.step input::-webkit-inner-spin-button,.step input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.rm{border:0;background:none;color:var(--faint);cursor:pointer;font-size:18px;line-height:1;padding:0}
+.rm:hover{color:var(--bad)}
+.cat .addbtn{margin:0 12px 12px}
+@media (max-width:520px){.row{grid-template-columns:minmax(0,1fr) 96px 22px;grid-template-areas:"n n x" "w s s"}.row .nm{grid-area:n}.row .w{grid-area:w}.row .step{grid-area:s}.row .rm,.row .sp{grid-area:x}}
+
+.check{display:flex;gap:10px;align-items:flex-start;font-size:14px;cursor:pointer}
+.check input{margin-top:3px;accent-color:var(--ink);width:16px;height:16px;flex:none}
+.check small{display:block;color:var(--muted);font-size:12.5px}
+
+/* results */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:12px}
+.card h3{font-size:15px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:500;display:flex;align-items:center}
+.card-h{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.card-h .aside{font-size:12.5px;color:var(--muted)}
+
+.verdict{--st:var(--ok);--stbg:var(--okbg);border-color:var(--st);border-width:1.5px;background:linear-gradient(var(--stbg),var(--stbg)) top/100% 100% no-repeat,var(--panel)}
+.verdict[data-state="tight"]{--st:var(--warn);--stbg:var(--warnbg)}
+.verdict[data-state="over"]{--st:var(--bad);--stbg:var(--badbg)}
+.verdict[data-state="gen"]{--st:var(--genc);--stbg:var(--genbg)}
+.verdict[data-state="empty"]{--st:var(--line);--stbg:var(--panel)}
+.pill{display:inline-flex;align-items:center;gap:7px;align-self:flex-start;background:var(--st);color:var(--panel);font-weight:600;font-size:12.5px;text-transform:uppercase;letter-spacing:.06em;padding:4px 10px 4px 8px;border-radius:999px}
+.verdict[data-state="empty"] .pill{color:var(--muted);background:var(--panel-2)}
+.pill i{width:8px;height:8px;border-radius:50%;background:currentColor}
+.v-head{font-family:var(--display);font-size:26px;line-height:1.1;font-weight:600;text-wrap:balance}
+.v-sub{margin:0;color:var(--muted);font-size:14px}
+.v-nums{display:flex;flex-wrap:wrap;gap:6px 22px;align-items:flex-end}
+.big{font-family:var(--display);font-weight:700;font-size:58px;line-height:.9;letter-spacing:-.01em}
+.big small{font-size:24px;font-weight:500;margin-left:4px}
+.v-meta{display:flex;flex-direction:column;gap:2px;font-size:13px;color:var(--muted);padding-bottom:4px}
+.v-meta b{color:var(--ink);font-weight:500;font-family:var(--mono)}
+.v-meta .lab{min-height:0}
+
+.meter{display:flex;flex-direction:column;gap:8px}
+.meter-bar{position:relative;padding-block:4px}
+.meter-track{height:22px;border-radius:5px;background:var(--panel-2);border:1px solid var(--line);display:flex;overflow:hidden}
+.meter-track span{height:100%;transition:width .35s ease}
+.mk{position:absolute;top:0;bottom:0;width:0;border-left:2px solid var(--ink);margin-left:-1px}
+.mk.dash{border-left:2px dashed var(--muted)}
+.keys{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:12.5px;color:var(--muted)}
+.keys span{display:inline-flex;align-items:center;gap:6px}
+.keys b{font-family:var(--mono);font-weight:500;color:var(--ink)}
+.keys i{display:inline-block;width:0;height:13px;border-left:2px solid var(--ink)}
+.keys i.dash{border-left:2px dashed var(--muted)}
+.keys i.red{width:14px;height:0;border-left:0;border-top:2px solid var(--bad)}
+.keys i.yel{width:14px;height:0;border-left:0;border-top:2px dashed var(--warn)}
+.legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12.5px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:9px;height:9px;border-radius:2px;display:inline-block}
+.legend b{font-family:var(--mono);font-weight:500;color:var(--ink)}
+
+.phases{display:grid;grid-template-columns:40px 1fr;gap:0 8px}
+.ph-axis{position:relative;height:170px;margin-top:22px;font-family:var(--mono);font-size:10.5px;color:var(--faint)}
+.ph-axis span{position:absolute;right:0;transform:translateY(50%)}
+.ph-area{position:relative;height:170px;margin-top:22px;display:flex;gap:14px;align-items:flex-end;border-bottom:1px solid var(--line);padding:0 6px}
+.ph-col{flex:1;display:flex;flex-direction:column-reverse;height:100%;position:relative}
+.ph-stack{display:flex;flex-direction:column-reverse;border-radius:4px 4px 0 0;overflow:hidden}
+.ph-stack span{display:block;transition:height .35s ease}
+.ph-val{position:absolute;left:50%;transform:translate(-50%,-4px);text-align:center;font-family:var(--mono);font-size:12px;font-weight:700;background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:0 5px;z-index:2;white-space:nowrap}
+.ph-limit{position:absolute;left:0;right:0;border-top:2px solid var(--bad);z-index:1}
+.ph-limit.soft{border-top:2px dashed var(--warn)}
+.phases .keys{grid-column:2;padding:8px 6px 0}
+.ph-names{grid-column:2;display:flex;gap:14px;padding:6px 6px 0}
+.ph-names div{flex:1;text-align:center;font-family:var(--display);font-size:15px;font-weight:600}
+.ph-names small{display:block;font-family:var(--body);font-weight:400;font-size:11.5px;color:var(--muted)}
+.ph-note{font-size:13px;color:var(--muted);margin:0}
+
+.schema{overflow-x:auto;margin:0 -4px}
+.schema svg{display:block;min-width:400px;width:100%;height:auto}
+.s-ink{fill:var(--ink)} .s-muted{fill:var(--muted)} .s-box{fill:var(--panel-2);stroke:var(--line)} .s-strong{fill:var(--panel);stroke:var(--ink);stroke-width:1.5}
+
+.spec{display:flex;flex-direction:column;margin:0}
+.spec-row{display:grid;grid-template-columns:minmax(0,138px) minmax(0,1fr);gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+.spec-row:last-child{border-bottom:0}
+.spec-row dt{color:var(--muted);font-size:13px}
+.spec-row dd{margin:0;display:flex;gap:10px;align-items:flex-start}
+.spec-row dd svg{flex:none}
+.spec-row dd b{font-weight:600}
+.spec-row dd small{display:block;color:var(--muted);font-size:12.5px}
+.copyrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{border:1px solid var(--ink);background:var(--ink);color:var(--bg);border-radius:8px;padding:9px 14px;cursor:pointer;font-weight:600;font-size:14px}
+.btn:hover{opacity:.9}
+.copyrow span{font-size:13px;color:var(--muted)}
+#copyFallback{width:100%;min-height:140px;font-family:var(--mono);font-size:12px;background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:8px}
+
+.tips{display:flex;flex-direction:column;gap:8px;margin:0;padding:0;list-style:none}
+.tips li{display:grid;grid-template-columns:18px 1fr;gap:8px;font-size:13.5px;line-height:1.4}
+.tips li::before{content:"";width:10px;height:10px;border-radius:50%;margin-top:5px;background:var(--faint)}
+.tips li.bad::before{background:var(--bad)}
+.tips li.warn::before{background:var(--warn)}
+.tips li.ok::before{background:var(--ok)}
+.tips li.info::before{background:var(--blue)}
+
+/* glossary */
+.gloss{margin-top:28px;display:flex;flex-direction:column;gap:12px}
+.gloss h2{font-size:26px;text-transform:uppercase}
+.gloss-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;align-items:start}
+.gloss details{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:0 14px}
+.gloss summary{cursor:pointer;padding:12px 0;font-weight:600;list-style:none;display:flex;justify-content:space-between;gap:10px}
+.gloss summary::-webkit-details-marker{display:none}
+.gloss summary::after{content:"+";font-family:var(--mono);color:var(--muted)}
+.gloss details[open] summary::after{content:"−"}
+.gloss details p{margin:0 0 12px;color:var(--muted);font-size:14px;max-width:65ch}
+.gloss details p b{color:var(--ink);font-weight:600}
+.gloss details.flash{box-shadow:0 0 0 2px var(--blue)}
+.conns{display:flex;flex-wrap:wrap;gap:14px;margin:0 0 12px}
+.conns figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11.5px;color:var(--muted);text-align:center;width:72px}
+.term{color:inherit;text-decoration:underline dotted;text-underline-offset:3px;cursor:help}
+.foot{margin-top:20px;font-size:12.5px;color:var(--muted);max-width:80ch}
+
+.mbar{display:none}
+@media (max-width:980px){
+  .mbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:5;gap:10px;align-items:center;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:var(--panel);border-top:1px solid var(--line);box-shadow:0 -6px 20px rgba(0,0,0,.08)}
+  .mbar i{width:10px;height:10px;border-radius:50%;flex:none}
+  .mbar .mt{flex:1;min-width:0;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mbar .mt b{font-family:var(--mono)}
+  .mbar a{flex:none;font-weight:600;color:var(--ink);font-size:14px}
+  body{padding-bottom:80px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="masthead">
+    <div class="brand">
+      <h1><span class="plug" aria-hidden="true"><i style="background:var(--c-light)"></i><i style="background:var(--red)"></i><i style="background:var(--blue)"></i></span>Хватит ли мощности?</h1>
+      <p>Калькулятор электрики для мероприятий. Выберите формат, поправьте технику — и сразу видно, хватит ли площадки, как раскидать нагрузку по фазам и что заказать у подрядчика. Кружок <button type="button" class="i" data-info="about" aria-label="Как пользоваться подсказками">i</button> рядом с термином объясняет его простыми словами.</p>
+    </div>
+  </header>
+
+  <main class="layout">
+    <div class="inputs">
+      <section class="block" id="sec-tpl">
+        <div class="block-h"><h2>Формат мероприятия<button type="button" class="i" data-info="tpl" aria-label="Подробнее">i</button></h2><span class="aside">Подставит типовую технику</span></div>
+        <div class="formats" id="formats"></div>
+        <div class="cfg">
+          <div class="field">
+            <div class="lab"><label for="guests" id="guestsLbl">Гостей</label><button type="button" class="i" data-info="guests" aria-label="Подробнее">i</button></div>
+            <div class="range"><input type="range" id="guests" min="0" max="13" step="1"><output id="guestsOut" for="guests"></output></div>
+          </div>
+          <div class="field">
+            <div class="lab"><span>Где проходит</span><button type="button" class="i" data-info="where" aria-label="Подробнее">i</button></div>
+            <div class="seg compact" role="radiogroup" aria-label="Где проходит">
+              <input type="radio" name="where" id="where-hall" value="hall"><label for="where-hall">Зал</label>
+              <input type="radio" name="where" id="where-street" value="street"><label for="where-street">Улица</label>
+              <input type="radio" name="where" id="where-tent" value="tent"><label for="where-tent">Шатёр</label>
+            </div>
+          </div>
+          <div class="field" id="seasonField">
+            <div class="lab"><span>Погода</span><button type="button" class="i" data-info="season" aria-label="Подробнее">i</button></div>
+            <div class="seg compact" role="radiogroup" aria-label="Погода">
+              <input type="radio" name="season" id="season-warm" value="warm"><label for="season-warm">Тепло</label>
+              <input type="radio" name="season" id="season-cool" value="cool"><label for="season-cool">+5…+15</label>
+              <input type="radio" name="season" id="season-cold" value="cold"><label for="season-cold">Мороз</label>
+            </div>
+          </div>
+        </div>
+        <div class="field">
+          <div class="lab"><span>Что будет на мероприятии</span><button type="button" class="i" data-info="opts" aria-label="Подробнее">i</button></div>
+          <div class="opts" id="opts"></div>
+        </div>
+        <div class="cfg-foot">
+          <button class="btn" id="applyCfg" type="button" hidden>Пересобрать технику по шаблону</button>
+          <p class="hint" id="cfgMsg"></p>
+        </div>
+      </section>
+
+      <section class="block" id="sec-src">
+        <div class="block-h"><h2>Откуда электричество<button type="button" class="i" data-info="source" aria-label="Подробнее">i</button></h2><span class="aside">Спросите у площадки заранее</span></div>
+        <div class="seg" role="radiogroup" aria-label="Источник питания">
+          <input type="radio" name="src" id="src-socket" value="socket">
+          <label for="src-socket">
+            <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><circle cx="13" cy="13" r="11" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="9" cy="13" r="1.8" fill="currentColor"/><circle cx="17" cy="13" r="1.8" fill="currentColor"/></svg>
+            <span><b>Розетка 220 В</b><small>Обычная, до 3,5 кВт</small></span>
+          </label>
+          <input type="radio" name="src" id="src-venue" value="venue">
+          <label for="src-venue">
+            <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><rect x="3" y="2" width="20" height="22" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 8h10M8 13h10M8 18h6" stroke="currentColor" stroke-width="2"/></svg>
+            <span><b>Щит площадки</b><small>Выделенная мощность</small></span>
+          </label>
+          <input type="radio" name="src" id="src-gen" value="gen">
+          <label for="src-gen">
+            <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><rect x="2" y="6" width="22" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M14 8.5l-3 5h4l-3 5" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="7" cy="22" r="2" fill="currentColor"/><circle cx="19" cy="22" r="2" fill="currentColor"/></svg>
+            <span><b>Генератор</b><small>Подберём размер</small></span>
+          </label>
+        </div>
+
+        <div class="fields" id="venueFields">
+          <div class="field">
+            <div class="lab"><label for="venueVal">Сколько даёт площадка</label><button type="button" class="i" data-info="venue" aria-label="Подробнее">i</button></div>
+            <div class="inline">
+              <input type="number" id="venueVal" min="0" step="1">
+              <div class="mini-seg" role="group" aria-label="Единицы">
+                <button type="button" data-unit="kw" aria-pressed="true">кВт</button>
+                <button type="button" data-unit="a" aria-pressed="false">А/фаза</button>
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <div class="lab"><label for="venuePh">Сеть на щите</label><button type="button" class="i" data-info="net" aria-label="Подробнее">i</button></div>
+            <select id="venuePh">
+              <option value="3">3 фазы, 380 В</option>
+              <option value="1">1 фаза, 220 В</option>
+            </select>
+          </div>
+        </div>
+        <div class="fields">
+          <div class="field">
+            <div class="lab"><label for="cableLen">От щита или генератора до сцены, м</label><button type="button" class="i" data-info="len" aria-label="Подробнее">i</button></div>
+            <input type="number" id="cableLen" min="1" step="5">
+          </div>
+          <div class="field" id="hoursField">
+            <div class="lab"><label for="hours">Часов работы генератора</label><button type="button" class="i" data-info="hours" aria-label="Подробнее">i</button></div>
+            <input type="number" id="hours" min="1" step="1">
+          </div>
+        </div>
+        <p class="hint" id="srcHint"></p>
+      </section>
+
+      <section class="block" id="sec-screens">
+        <div class="block-h"><h2>LED-экраны<button type="button" class="i" data-info="screen" aria-label="Подробнее">i</button></h2><span class="aside">Главный потребитель на большинстве шоу</span></div>
+        <div class="screens" id="screens"></div>
+        <button class="addbtn" id="addScreen" type="button">+ Добавить экран</button>
+      </section>
+
+      <section class="block" id="sec-eq">
+        <div class="block-h"><h2>Оборудование<button type="button" class="i" data-info="watts" aria-label="Подробнее">i</button></h2><span class="aside">Мощность по умолчанию типовая, её можно поправить</span></div>
+        <p class="hint">Метка <span class="mono">×0,8</span> у группы — это <a href="#g-kc" class="term" data-g="g-kc">коэффициент одновременности</a>: какую долю паспортной мощности группа реально берёт во время шоу. Нажмите на неё, чтобы узнать, почему именно столько.</p>
+        <div class="cats" id="equip"></div>
+      </section>
+
+      <section class="block" id="sec-calc">
+        <div class="block-h"><h2>Как считать</h2></div>
+        <div class="field">
+          <div class="lab"><span>Режим</span><button type="button" class="i" data-info="mode" aria-label="Подробнее">i</button></div>
+          <div class="seg two" role="radiogroup" aria-label="Режим расчёта">
+            <input type="radio" name="mode" id="mode-real" value="real">
+            <label for="mode-real"><span><b>Реалистично</b><small>С учётом того, что не всё работает на 100% одновременно</small></span></label>
+            <input type="radio" name="mode" id="mode-worst" value="worst">
+            <label for="mode-worst"><span><b>Всё на максимум</b><small>Худший случай: каждый прибор на паспортной мощности</small></span></label>
+          </div>
+        </div>
+        <div class="fields">
+          <div class="field">
+            <div class="lab"><label for="margin">Запас мощности</label><button type="button" class="i" data-info="margin" aria-label="Подробнее">i</button></div>
+            <select id="margin">
+              <option value="15">15% — впритык</option>
+              <option value="25">25% — стандарт</option>
+              <option value="35">35% — с перестраховкой</option>
+            </select>
+          </div>
+        </div>
+        <label class="check"><input type="checkbox" id="soundSep"><span>Звук — на отдельную фазу <button type="button" class="i" data-info="soundsep" aria-label="Подробнее">i</button><small>Меньше гула и помех от света и экранов. Звукорежиссёры обычно просят именно так.</small></span></label>
+      </section>
+    </div>
+
+    <aside class="results" id="results" aria-live="polite">
+      <section class="card verdict" id="verdict"></section>
+      <section class="card">
+        <div class="card-h"><h3>Нагрузка по фазам<button type="button" class="i" data-info="phasechart" aria-label="Подробнее">i</button></h3><span class="aside" id="imbTxt"></span></div>
+        <div class="phases" id="phases"></div>
+        <p class="ph-note" id="phNote"></p>
+      </section>
+      <section class="card">
+        <div class="card-h"><h3>Схема подключения<button type="button" class="i" data-info="schema" aria-label="Подробнее">i</button></h3></div>
+        <div class="schema" id="schema"></div>
+      </section>
+      <section class="card">
+        <div class="card-h"><h3>Что заказать</h3></div>
+        <dl class="spec" id="spec"></dl>
+        <div class="copyrow"><button class="btn" id="copyBtn" type="button">Скопировать для техподрядчика</button><span id="copyMsg"></span></div>
+        <textarea id="copyFallback" hidden readonly aria-label="Текст расчёта"></textarea>
+      </section>
+      <section class="card">
+        <div class="card-h"><h3>На что обратить внимание</h3></div>
+        <ul class="tips" id="tips"></ul>
+      </section>
+    </aside>
+  </main>
+
+  <section class="gloss" id="gloss">
+    <h2>Электричество на пальцах</h2>
+    <div class="gloss-grid">
+      <details id="g-basics"><summary>Вольты, амперы, ватты</summary>
+        <p>Представьте водопровод. <b>Напряжение (В)</b> — это давление в трубе, в розетке оно всегда около 230 В. <b>Ток (А)</b> — сколько воды течёт. <b>Мощность (Вт)</b> — сколько работы делает прибор: мощность = напряжение × ток.</p>
+        <p>Удобное правило: <b>1 ампер на 220 В ≈ 0,23 кВт</b>. Обычная розетка на 16 А выдерживает около 3,5 кВт — это один электрочайник и одна кофемашина, не больше.</p>
+      </details>
+      <details id="g-phase"><summary>Что такое фазы, 220 и 380</summary>
+        <p>Трёхфазная сеть — это три отдельных «трубы» по 230 В (L1, L2, L3). Между любыми двумя фазами 400 В — отсюда «380». Обычные приборы подключаются к одной фазе, мощные (тепловые пушки 9 кВт, большие дистры) — сразу к трём.</p>
+        <p>Площадка обычно называет <b>общую</b> мощность, например 50 кВт. Это примерно по 72 А на каждую фазу, и превышать нельзя ни на одной.</p>
+      </details>
+      <details id="g-imb"><summary>Перекос фаз</summary>
+        <p>Если весь свет и экран сидят на L1, а L2 и L3 почти пустые, автомат на L1 выбьет, хотя суммарно мощности хватает. Поэтому нагрузку раскидывают по фазам поровну. Нормальный перекос — до 20–25%.</p>
+      </details>
+      <details id="g-kc"><summary>Коэффициент одновременности</summary>
+        <p>На приборе написана максимальная мощность, но во время шоу он редко работает на пределе. Звук в среднем берёт половину паспортной мощности, свет — около 80%, экран — 70% (при белой картинке больше). Обогреватели и плиты работают на полную.</p>
+        <p>Если сомневаетесь, переключитесь в режим «Всё на максимум» и посмотрите, насколько вырастет цифра.</p>
+      </details>
+      <details id="g-kva"><summary>кВт и кВА: почему генератор «больше»</summary>
+        <p>Генераторы продаются в <b>кВА</b> (полная мощность), а приборы потребляют <b>кВт</b>. Часть энергии «гуляет» в сети без пользы, это описывает cos φ. Грубо: <b>кВт ≈ кВА × 0,8</b>. Генератор на 100 кВА честно отдаёт около 80 кВт.</p>
+      </details>
+      <details id="g-margin"><summary>Зачем запас</summary>
+        <p>При включении экран и усилители на долю секунды берут в разы больше тока. Автоматы на жаре срабатывают раньше. Кто-то принесёт чайник в гримёрку. Запас 25% — нормальная практика, меньше 15% — риск выключения посреди шоу.</p>
+        <p>Генератор при этом не стоит брать с трёхкратным запасом: дизель, загруженный меньше чем на 30%, «закоксовывается» и может заглохнуть.</p>
+      </details>
+      <details id="g-conn"><summary>Какие бывают разъёмы</summary>
+        <div class="conns" id="connGallery"></div>
+        <p><b>Синий</b> — 230 В, одна фаза. <b>Красный</b> — 400 В, три фазы. Чем больше ток, тем крупнее разъём: 16, 32, 63, 125 А. <b>Powerlock</b> — пять отдельных одножильных разъёмов для больших мощностей, до 400 А на фазу. Цвета жил: коричневый, чёрный, серый — фазы, синий — ноль, жёлто-зелёный — земля.</p>
+      </details>
+      <details id="g-drop"><summary>Длинный кабель и падение напряжения</summary>
+        <p>Кабель — тоже сопротивление. Чем он длиннее и тоньше, тем меньше вольт доходит до сцены. Если потеря больше 4–5%, приборы начинают сбоить, а кабель греется. Поэтому на 50 метров нужен кабель толще, чем на 10, даже при той же нагрузке.</p>
+      </details>
+      <details id="g-safe"><summary>Безопасность</summary>
+        <p>К щиту площадки подключается только <b>электрик с допуском</b>. Проверьте заземление и УЗО. Не собирайте удлинители «паровозиком» и не подключайте тройники в тройники. Кабели на проходах гостей закрывайте кабель-каналами, на улице держите разъёмы выше земли и под навесом.</p>
+      </details>
+    </div>
+    <p class="foot">Расчёт ориентировочный и нужен для разговора с площадкой и техподрядчиком. Итоговую схему подключения утверждает электрик, который будет подключать.</p>
+  </section>
+</div>
+
+<div class="pop" id="pop" role="dialog" aria-modal="false" aria-labelledby="popT" hidden>
+  <button type="button" class="px" id="popX" aria-label="Закрыть">×</button>
+  <h4 id="popT"></h4>
+  <div id="popB"></div>
+</div>
+
+<div class="mbar" id="mbar"><i id="mbDot"></i><span class="mt" id="mbTxt"></span><a href="#results">Итог ↓</a></div>
+
+<script>
+const $=s=>document.querySelector(s);
+const LINE_VA=16*230*0.8;
+const GENS=[10,15,20,30,45,60,80,100,130,160,200,250,300,400,500,630,800,1000,1250,1500,2000];
+const CABLES=[[1.5,16],[2.5,25],[4,34],[6,43],[10,60],[16,80],[25,105],[35,130],[50,165],[70,210],[95,255],[120,295],[150,340],[185,390],[240,465]];
+const RHO=0.0175;
+const ORDER=['light','screen','video','sound','stage','sfx','food','climate','misc'];
+const I=(k,label='Подробнее')=>`<button type="button" class="i" data-info="${k}" aria-label="${label}">i</button>`;
+
+const CATS=[
+ {id:'light',name:'Свет',kc:.8,pf:.95,info:'Световой пульт почти никогда не держит все приборы на 100%: часть приборов погашена, часть светит в полсилы. Поэтому считаем 80% от паспорта. Для шоу с «белыми» финалами и стробами переключитесь в режим «Всё на максимум».',items:[
+  ['par','LED PAR, заливка',180],['wash','Голова Wash (LED)',450],['spot','Голова Spot / Profile',600],['beam','Голова Beam',400],
+  ['blind','Блиндер LED',300],['strobe','Стробоскоп LED',1000],['laser','Лазер (шоу)',250],['profile','Профильный прожектор, 750 Вт',750],['follow','Следящая пушка',1500],
+  ['bar','LED-линейка / батен',150],['arch','Архитектурный прожектор (улица)',250],['desk','Световой пульт',150]]},
+ {id:'video',name:'Видео и проекция',kc:.9,pf:.95,info:'Проекторы и видеотехника работают ровно всё время, пока включены. Скидка небольшая — 90%.',items:[
+  ['proj5','Проектор 5 000 лм',450],['proj10','Проектор 10 000 лм',900],['proj20','Проектор 20 000 лм',1700],['proj30','Проектор 30 000 лм',2600],['tv','ТВ-панель 65–75"',300],
+  ['media','Медиасервер / видеокомпьютер',600],['proc','Видеопроцессор, свитчер',150],['cam','Камера и трансляция',150]]},
+ {id:'sound',name:'Звук',kc:.5,pf:.9,info:'На активной акустике пишут максимальное потребление на пиках. Музыка — это пики и паузы, поэтому в среднем звук берёт около половины паспорта. Но пики короткие и сильные: звуку нужна своя, не перегруженная линия.',items:[
+  ['la','Линейный массив, элемент',600],['sub','Сабвуфер активный',1000],['top','Акустика активная',400],['mon','Сценический монитор',300],
+  ['amp','Усилитель (для пассивной акустики)',1500],['mix','Звуковой пульт',200],['rf','Радиомикрофоны, стойка',100]]},
+ {id:'stage',name:'Бэклайн и DJ',kc:.7,pf:.9,info:'Комбики и клавиши редко выкручены на максимум. Считаем 70%.',items:[
+  ['dj','DJ-сетап',400],['gtr','Гитарный комбик',150],['bass','Басовый комбик',500],['keys','Клавиши',100],['drums','Электронные барабаны',100]]},
+ {id:'sfx',name:'Спецэффекты',kc:.7,pf:.95,info:'Дым-машины и хейзеры больше всего берут, когда греются, а потом поддерживают температуру. Искры и конфетти работают короткими включениями. Считаем 70%.',items:[
+  ['smoke','Дым-машина',1500],['haze','Хейзер',1200],['low','Генератор тяжёлого дыма',3000],['spark','Холодные искры',700],['conf','Конфетти-машина',150],
+  ['bubble','Генератор мыльных пузырей',100],['snow','Генератор снега',1200],['fan','Вентилятор для эффектов',300]]},
+ {id:'food',name:'Кейтеринг',kc:.7,pf:1,info:'Плиты и кофемашины греют циклами: включились, нагрели, выключились. Все сразу работают редко — считаем 70%. Но их включает кейтеринг, а не вы: закладывайте им отдельную линию.',items:[
+  ['coffee','Кофемашина',2500],['kettle','Чайник / термопот',2000],['induct','Индукционная плита',3500],['fryer','Фритюрница',3000],['grill','Электрогриль',2500],
+  ['fridge','Холодильник / витрина',400],['ice','Льдогенератор',600],['marmit','Мармит',1200],['beer','Пивное оборудование',800]]},
+ {id:'climate',name:'Климат',kc:1,pf:.95,info:'Обогреватель, если включён, работает на полную всё время — скидки нет. Именно климат чаще всего неожиданно съедает всю мощность в шатре.',items:[
+  ['heat3','Тепловая пушка 3 кВт',3000],['heat9','Тепловая пушка 9 кВт',9000],['curtain','Тепловая завеса 6 кВт',6000],['ac','Мобильный кондиционер',1500],['bigfan','Промышленный вентилятор',300]]},
+ {id:'misc',name:'Прочее',kc:.8,pf:.95,info:'Ноутбуки, кассы, зарядки и рабочий свет. Мелочь по отдельности, но на маркете или фестивале набирается прилично.',items:[
+  ['laptop','Ноутбук / ПК',100],['pos','Касса / терминал',60],['charge','Зарядная станция',300],['work','Рабочий свет',200],['neon','Неоновая вывеска',80],
+  ['badge','Принтер бейджей',400],['photo','Фотобудка',500],['game','Игровая зона (консоль + ТВ)',350]]}
+];
+const SCREEN={id:'screen',name:'LED-экраны',kc:.7,pf:.95};
+const NAMES={screen:'LED-экраны',...Object.fromEntries(CATS.map(c=>[c.id,c.name]))};
+const SCREEN_TYPES={
+  in:{n:'Для помещения (P2–P3,9)',max:650},
+  out:{n:'Уличный (P3,9–P6)',max:900},
+  bright:{n:'Уличный, высокая яркость',max:1100}
+};
+
+/* ---------- templates ---------- */
+// значение: число — база на 300 гостей (масштабируется), [база, мин, макс] — с ограничениями
+const G_STEPS=[30,50,100,150,200,300,500,800,1000,1500,2000,3000,5000,10000];
+const OPTS=[['screen','LED-экран'],['stream','Трансляция и съёмка'],['food','Кейтеринг на месте'],['sfx','Спецэффекты'],['live','Живые музыканты'],['act','Фотозона и активации']];
+const BAND={stage:{gtr:[2,2,2],bass:[1,1,1],keys:[1,1,1],drums:[1,1,1]},sound:{mon:[4,4,4]}};
+const GEN={
+  stream:{video:{cam:[2,1,6],media:[1,1,2],proc:[1,1,2]}},
+  food:{food:{coffee:2,fridge:2,marmit:3}},
+  sfx:{sfx:{haze:[2,1,4],spark:[4,2,8]}},
+  live:BAND,
+  act:{misc:{photo:[1,1,3],game:[1,0,4]}}
+};
+const RECIPES={
+ corp:{n:'Корпоратив',c:'банкет и шоу-программа',hours:8,def:{g:300,where:'hall',opts:{screen:1,stream:0,food:1,sfx:1,live:0,act:1}},
+  core:{light:{par:12,wash:8,spot:6,beam:4,blind:2,desk:[1,1,2]},sound:{la:8,sub:4,mon:[4,2,6],mix:[1,1,2],rf:[1,1,3]},stage:{dj:[1,1,1]},misc:{laptop:[3,1,6],badge:[1,0,3]}},
+  screen:[[6,3.5]]},
+ concert:{n:'Концерт',c:'сцена, линейный массив',hours:8,def:{g:800,where:'hall',opts:{screen:1,stream:1,food:1,sfx:1,live:1,act:0}},
+  core:{light:{par:16,wash:12,spot:10,beam:10,blind:6,strobe:4,follow:[2,0,4],desk:[1,1,2]},sound:{la:16,sub:8,mon:[8,4,12],mix:[2,1,2],rf:[1,1,2]},video:{media:[1,1,2],proc:[1,1,2]},misc:{laptop:[2,1,4]}},
+  screen:[[8,4.5],[3,5,1000],[3,5,1000]],sfx:{sfx:{smoke:[2,1,4],haze:[2,1,4],spark:[4,2,8],conf:[2,0,4]}},food:{food:{coffee:1,fridge:3}},stream:{video:{cam:[3,2,6]}}},
+ conf:{n:'Конференция',c:'форум, доклады, панели',hours:10,def:{g:300,where:'hall',opts:{screen:1,stream:1,food:1,sfx:0,live:0,act:0}},
+  core:{light:{par:10,profile:4,bar:4,desk:[1,1,1]},sound:{top:4,sub:[2,0,4],mon:[2,1,4],mix:[1,1,1],rf:[2,2,8]},video:{tv:4,media:[1,1,2],proc:[1,1,2]},misc:{laptop:8,badge:[2,1,6],charge:[2,1,6]}},
+  screen:[[5,3]],food:{food:{coffee:3,kettle:2,fridge:1}},stream:{video:{cam:[3,2,6]}}},
+ wedding:{n:'Свадьба',c:'банкет, танцпол, декор',hours:10,def:{g:150,where:'hall',opts:{screen:0,stream:0,food:1,sfx:1,live:1,act:1}},
+  core:{light:{par:16,wash:6,bar:8,desk:[1,1,1]},sound:{top:4,sub:2,mix:[1,1,1],rf:[1,1,2]},stage:{dj:[1,1,1]},misc:{laptop:[1,1,1]}},
+  screen:[[4,2.5]],food:{food:{coffee:1,marmit:6,fridge:3}},sfx:{sfx:{haze:[1,1,2],spark:[4,2,8],low:[1,1,1]}},act:{misc:{photo:[1,1,2]}},stream:{video:{cam:[2,1,3],proc:[1,1,1]}}},
+ party:{n:'DJ-вечеринка',c:'клуб, танцпол, эффекты',hours:8,def:{g:500,where:'hall',opts:{screen:1,stream:0,food:1,sfx:1,live:0,act:1}},
+  core:{light:{par:8,wash:8,spot:4,beam:8,strobe:4,blind:4,laser:[2,1,6],desk:[1,1,1]},sound:{la:8,sub:8,mon:[2,2,4],mix:[1,1,1]},stage:{dj:[1,1,2]}},
+  screen:[[6,3]],food:{food:{fridge:3,ice:[1,1,3]}},sfx:{sfx:{smoke:[2,1,4],haze:[2,1,4],conf:[1,1,2],spark:[2,2,6]}},stream:{video:{cam:[1,1,2],media:[1,1,1],proc:[1,1,1]}}},
+ expo:{n:'Выставочный стенд',c:'подсветка, экраны, демо',hours:10,guestsLabel:'Посетителей в день',def:{g:300,where:'hall',opts:{screen:1,stream:0,food:1,sfx:0,live:0,act:1}},
+  core:{light:{par:12,bar:10,profile:4},video:{tv:6,media:[1,1,2]},sound:{top:[2,2,4],mix:[1,1,1]},misc:{laptop:4,charge:[2,1,4]}},
+  screen:[[4,2.5]],food:{food:{coffee:1,fridge:1}},sfx:{sfx:{haze:[1,1,1],bubble:[1,0,2]}}},
+ fest:{n:'Фестиваль',c:'опен-эйр, фудкорт, зоны',hours:12,def:{g:3000,where:'street',opts:{screen:1,stream:1,food:1,sfx:1,live:1,act:1}},
+  core:{light:{par:24,wash:16,spot:12,beam:12,blind:8,strobe:6,follow:[2,1,4],arch:10,desk:[2,1,3]},sound:{la:24,sub:12,mon:[8,6,12],mix:[2,2,3],rf:[1,1,2]},video:{media:[2,1,3],proc:[2,1,3]},misc:{work:20,charge:4,laptop:6,pos:10}},
+  screen:[[10,5],[4,6,1000],[4,6,1000]],food:{food:{coffee:6,fridge:10,marmit:8,induct:4,beer:4,fryer:4,grill:4}},sfx:{sfx:{spark:[6,4,12],conf:[2,1,4],smoke:[2,1,4]}},
+  live:{stage:{gtr:[4,4,4],bass:[2,2,2],keys:[2,2,2],drums:[2,2,2]},sound:{mon:[4,4,4]}},stream:{video:{cam:[4,2,8]}},act:{misc:{photo:[2,1,4],game:[2,1,6]}}},
+ theatre:{n:'Спектакль',c:'театральный свет, радиомикрофоны',hours:5,def:{g:500,where:'hall',opts:{screen:0,stream:0,food:0,sfx:1,live:0,act:0}},
+  core:{light:{profile:16,wash:10,spot:6,par:12,follow:[2,1,2],bar:6,desk:[1,1,1]},sound:{top:6,sub:2,mon:[4,2,6],mix:[1,1,1],rf:[4,2,12]},video:{proj20:[1,0,2],media:[1,1,1]}},
+  screen:[[6,3.5]],sfx:{sfx:{haze:[2,1,3],low:[1,1,2],smoke:[1,1,2]}},food:{food:{coffee:2,fridge:1}},stream:{video:{cam:[2,1,3]}}},
+ launch:{n:'Презентация',c:'запуск продукта, шоу-открытие',hours:6,def:{g:300,where:'hall',opts:{screen:1,stream:1,food:1,sfx:1,live:0,act:1}},
+  core:{light:{par:12,wash:10,spot:8,beam:6,blind:4,desk:[1,1,1]},sound:{la:8,sub:4,mon:[2,2,4],mix:[1,1,1],rf:[1,1,3]},video:{media:[2,1,3],proc:[1,1,2]},misc:{laptop:[4,2,6]}},
+  screen:[[8,4.5]],sfx:{sfx:{spark:[6,4,10],conf:[2,1,4],low:[1,1,2],haze:[2,1,4]}},stream:{video:{cam:[3,2,6]}},food:{food:{coffee:2,fridge:2,marmit:2}}},
+ market:{n:'Маркет и фудкорт',c:'торговые точки, еда, касса',hours:12,def:{g:2000,where:'street',opts:{screen:0,stream:0,food:1,sfx:0,live:0,act:1}},
+  core:{light:{arch:8,par:8,bar:6},sound:{top:[4,2,8],sub:[2,0,4],mix:[1,1,1]},stage:{dj:[1,1,1]},misc:{work:20,laptop:8,pos:12,neon:10,charge:2}},
+  screen:[[4,2.5]],food:{food:{coffee:8,induct:8,fridge:12,marmit:8,kettle:4,beer:2,fryer:4,grill:4}},sfx:{sfx:{bubble:[2,1,4]}}},
+ sport:{n:'Спортивное событие',c:'забег, турнир, награждение',hours:8,def:{g:2000,where:'street',opts:{screen:1,stream:1,food:1,sfx:1,live:0,act:1}},
+  core:{light:{arch:20,par:12,wash:8,desk:[1,1,1]},sound:{la:12,sub:4,mix:[1,1,1],rf:[1,1,2]},video:{media:[1,1,2],proc:[1,1,2]},misc:{laptop:6,work:10,pos:4}},
+  screen:[[8,5]],stream:{video:{cam:[4,2,8]}},food:{food:{coffee:2,fridge:4,marmit:4}},sfx:{sfx:{conf:[2,1,4],spark:[4,2,8],smoke:[2,1,3]}}},
+ empty:{n:'С нуля',c:'пустой список',hours:8,def:{g:300,where:'hall',opts:{screen:0,stream:0,food:0,sfx:0,live:0,act:0}},core:{},empty:true}
+};
+
+function blankItems(){const o={};CATS.forEach(c=>{o[c.id]=c.items.map(([id,n,w])=>({id,n,w,q:0}))});return o;}
+const kOf=g=>Math.pow(g/300,0.7);
+function qty(v,k){
+  if(Array.isArray(v)){const [b,mn=1,mx=Infinity]=v;return Math.min(mx,Math.max(mn,Math.round(b*k)));}
+  return v>0?Math.max(1,Math.round(v*k)):0;
+}
+function addSet(items,set,k){
+  for(const [cid,m] of Object.entries(set||{})) for(const [id,v] of Object.entries(m)){
+    const it=items[cid].find(x=>x.id===id); if(it) it.q+=qty(v,k);
+  }
+}
+function build(cfg){
+  const R=RECIPES[cfg.fmt], k=kOf(cfg.g), items=blankItems(), screens=[];
+  if(R.empty) return {items,screens};
+  addSet(items,R.core,k);
+  ['stream','food','sfx','live','act'].forEach(o=>{if(cfg.opts[o]) addSet(items,R[o]||GEN[o],k);});
+  if(cfg.opts.screen){
+    const f=Math.min(1.6,Math.max(.6,Math.sqrt(k)));
+    (R.screen||[[5,3]]).forEach(([w0,h0,minG])=>{
+      if(minG&&cfg.g<minG) return;
+      screens.push({w:Math.min(16,Math.max(2,Math.round(w0*f*2)/2)),h:Math.min(9,Math.max(1.5,Math.round(h0*f*2)/2)),type:cfg.where==='street'?'out':'in'});
+    });
+  }
+  const area=cfg.g*1.5;
+  if(cfg.where!=='hall'){
+    if(!(R.core.light&&R.core.light.arch)) addSet(items,{light:{arch:6}},k);
+    addSet(items,{misc:{work:6}},k);
+  }
+  if(cfg.where==='tent'){
+    if(cfg.season==='cool') addSet(items,{climate:{heat9:[Math.ceil(area/150),1]}},1);
+    if(cfg.season==='cold') addSet(items,{climate:{heat9:[Math.ceil(area/70),1],curtain:[1,1,2]}},1);
+    if(cfg.season==='warm') addSet(items,{climate:{bigfan:[Math.ceil(cfg.g/150),1]}},1);
+  }
+  if(cfg.where==='street'){
+    if(cfg.season==='cool') addSet(items,{climate:{heat3:[2,1,6]}},k);
+    if(cfg.season==='cold') addSet(items,{climate:{heat3:[3,2,8],heat9:[1,1,4]}},k);
+  }
+  return {items,screens};
+}
+
+const BASE={src:'venue',venueUnit:'kw',venueKw:50,venueA:63,venuePh:3,cableLen:30,hours:8,mode:'real',margin:25,soundSep:true,manual:false,
+  cfg:{fmt:'corp',g:300,where:'hall',season:'warm',opts:{...RECIPES.corp.def.opts}}};
+const KEY='power-calc-v2';
+let S=null;
+function load(){
+  try{
+    const raw=localStorage.getItem(KEY); if(!raw) return null;
+    const d=JSON.parse(raw); const items=blankItems();
+    CATS.forEach(c=>{const saved=(d.items&&d.items[c.id])||[];
+      items[c.id].forEach(it=>{const s=saved.find(x=>x.id===it.id); if(s){it.q=+s.q||0;it.w=+s.w||it.w;}});
+      saved.filter(x=>x.custom).forEach(x=>items[c.id].push({id:x.id,n:String(x.n||'Свой прибор'),w:+x.w||0,q:+x.q||0,custom:true}));
+    });
+    const cfg={...BASE.cfg,...(d.cfg||{})}; if(!RECIPES[cfg.fmt]) cfg.fmt='corp';
+    return {...BASE,...d,cfg,items,screens:Array.isArray(d.screens)?d.screens:[]};
+  }catch(e){return null;}
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+
+const fmt=(n,d=1)=>{const p=10**d;return (Math.round(n*p)/p).toLocaleString('ru-RU');};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const plural=(n,a,b,c)=>{n=Math.abs(n)%100;const n1=n%10;if(n>10&&n<20)return c;if(n1>1&&n1<5)return b;if(n1===1)return a;return c;};
+const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
+
+function applyCfg(){
+  const c=S.cfg, R=RECIPES[c.fmt], b=build(c);
+  S.items=b.items; S.screens=b.screens;
+  if(c.where==='hall'){ if(S.src==='gen') S.src='venue'; S.cableLen=30; }
+  else { S.src='gen'; S.cableLen=c.g>=3000?80:50; }
+  S.hours=R.hours; S.manual=false;
+  renderSource(); renderScreens(); renderEquip(false);
+  const n=CATS.reduce((s,cat)=>s+S.items[cat.id].filter(i=>i.q>0).length,0);
+  $('#applyCfg').hidden=true;
+  $('#cfgMsg').innerHTML=R.empty?'Список очищен — добавляйте технику вручную.':`Собрано: <b>${R.n}</b>, ${fmt(c.g,0)} ${guestWord(c)} — ${n} ${plural(n,'позиция','позиции','позиций')} техники${S.screens.length?`, ${S.screens.length} ${plural(S.screens.length,'экран','экрана','экранов')}`:''}. Дальше правьте как угодно.`;
+  commit();
+}
+function guestWord(c){return RECIPES[c.fmt].guestsLabel?'посетителей':plural(c.g,'гость','гостя','гостей');}
+function cfgChanged(){
+  renderCfg();
+  if(S.manual){
+    $('#applyCfg').hidden=false;
+    $('#cfgMsg').textContent='Вы уже правили технику вручную. Пересборка заменит список и экраны.';
+    save();
+  } else applyCfg();
+}
+function markManual(){if(!S.manual){S.manual=true;}}
+
+/* ---------- info popups ---------- */
+const INFO={
+ about:['Подсказки','<p>Нажмите на кружок «i» рядом с любым термином — появится короткое объяснение. Закрыть можно крестиком, кнопкой Esc или кликом мимо.</p>'],
+ tpl:['Шаблон — стартовая точка','<p>Калькулятор подставит типовой набор техники для такого формата и размера. Цифры взяты из среднего райдера, а не из вашего проекта.</p><p>Техника растёт с числом гостей не линейно: на 1000 гостей нужно не в 3 раза больше света, чем на 300, а примерно в 2.</p><p>Пока вы не правили список вручную, шаблон пересобирается сразу при любом изменении.</p>'],
+ guests:['Сколько гостей','<p>От числа гостей зависят размер сцены и экрана, мощность звука, количество кофемашин и рабочего света.</p><p>Для выставочного стенда — сколько посетителей в день проходит через стенд.</p>'],
+ where:['Зал, улица или шатёр','<p><strong>Зал</strong> — обычно есть щит площадки с выделенной мощностью.</p><p><strong>Улица</strong> — почти всегда нужен генератор, экраны уличные и прожорливее, добавляется рабочий свет.</p><p><strong>Шатёр</strong> — по электричеству это улица, плюс обогрев или вентиляция, которые часто съедают больше, чем весь свет.</p>'],
+ season:['Погода','<p>Тепловые пушки — самый прожорливый потребитель: одна пушка на 9 кВт тянет как 15 линейных массивов.</p><p>Шатру на 300 гостей в мороз нужно 50–80 кВт только на обогрев. На улице без шатра греем только бэкстейдж и зоны персонала.</p><p>В зале погода не влияет.</p>'],
+ opts:['Что будет на мероприятии','<p>Каждая галочка добавляет типовой набор техники:</p><p><strong>Трансляция</strong> — камеры, видеомикшер, компьютер. <strong>Кейтеринг</strong> — кофемашины, мармиты, холодильники. <strong>Спецэффекты</strong> — хейзеры, холодные искры. <strong>Живые музыканты</strong> — комбики, клавиши, мониторы. <strong>Активации</strong> — фотобудка, игровые зоны.</p>'],
+ source:['Откуда берётся электричество','<p><strong>Розетка</strong> — одна бытовая линия на 16 А. Хватит на ноутбук и пару колонок.</p><p><strong>Щит площадки</strong> — к нему подключается ваш дистрибьютор. Площадка разрешает взять определённую мощность.</p><p><strong>Генератор</strong> — дизельная станция, когда площадка не даёт мощности или вы на улице. Калькулятор подберёт размер и посчитает топливо.</p>'],
+ venue:['Выделенная мощность','<p>Это лимит, который площадка разрешает взять. Спрашивайте цифру в кВт и номинал автомата.</p><p>Если вам сказали «автомат 63 ампера» — это на каждую фазу, переключите на «А/фаза».</p><p>Для ориентира: <strong>50 кВт ≈ 72 А на фазу</strong>, 100 кВт ≈ 145 А.</p>'],
+ net:['Сеть на щите','<p><strong>380 В, 3 фазы</strong> — стандарт для сцены. Три «трубы» по 230 В, нагрузку раскидывают по ним.</p><p><strong>220 В, 1 фаза</strong> — как в квартире. Обычно максимум 32–63 А, для шоу с экраном почти всегда мало.</p>'],
+ len:['Расстояние до сцены','<p>Меряйте по пути кабеля, а не по прямой: вокруг зала, через двери, по фермам. Добавьте 10–15% на провисы.</p><p>Чем длиннее кабель, тем толще он нужен, иначе на сцену дойдёт меньше вольт.</p>'],
+ hours:['Часы работы генератора','<p>Считайте от монтажа и саундчека до демонтажа, а не только шоу. Генератор обычно заводят за 1–2 часа до начала.</p><p>От этого зависит, сколько дизеля заказать.</p>'],
+ screen:['LED-экраны','<p>Экран собирается из кабинетов 50×50 см. Мощность считается по площади: сколько ватт на квадратный метр при белой картинке.</p><p>Экран — главный потребитель на большинстве шоу, поэтому указывайте размер точно.</p>'],
+ screentype:['Тип экрана','<p><strong>Для помещения</strong> — мелкий шаг пикселя (P2–P3,9), до ~650 Вт/м².</p><p><strong>Уличный</strong> — ярче, его видно на солнце, и он в полтора раза прожорливее.</p><p>Цифра — максимум на белом кадре. На тёмном видео экран берёт в 2–3 раза меньше, но автоматы должны выдержать максимум.</p>'],
+ watts:['Где взять мощность прибора','<p>На наклейке сзади или в паспорте: <strong>Power consumption</strong>, Max power, «Потребляемая мощность».</p><p>Не путайте с мощностью звука у колонок (RMS/Peak) и с яркостью в люменах.</p><p>Если указан ток — умножьте амперы на 230, получите ватты.</p>'],
+ big:['Прибор на 380 В','<p>Всё, что мощнее ~5 кВт (тепловые пушки 9 кВт, завесы), обычно подключается сразу к трём фазам через красный разъём CEE.</p><p>Для таких приборов на дистрибьюторе нужен отдельный трёхфазный выход.</p>'],
+ mode:['Реалистично или на максимум','<p><strong>Реалистично</strong> — учитываем, что звук в среднем берёт половину паспорта, свет — 80% и т.д. Так считают прокатчики.</p><p><strong>Всё на максимум</strong> — складываем паспортные цифры. Полезно, если шоу с белыми финалами, стробами и всей техникой на пределе.</p>'],
+ margin:['Запас мощности','<p>При включении экраны и усилители на долю секунды берут в разы больше тока, на жаре автоматы срабатывают раньше, а кто-то обязательно принесёт чайник.</p><p><strong>25%</strong> — нормальная практика. 15% — только если всё точно известно.</p>'],
+ soundsep:['Звук на своей фазе','<p>Диммеры света и блоки питания экранов создают в сети помехи. Если звук сидит на той же фазе, в колонках появляется гул и треск.</p><p>Поэтому звук собирают на одну фазу, где нет света и экранов. Если звука слишком много для одной фазы — раскладываем по всем.</p>'],
+ load:['Расчётная нагрузка','<p>Сумма мощности всех приборов с учётом того, что не всё работает на 100% одновременно.</p><p>«Если всё на 100%» — паспортные цифры, просто сложенные. На практике шоу почти никогда не доходит до этого числа.</p>'],
+ meter:['Шкала нагрузки','<p>Цветная полоса — сколько берёт каждый отдел. Сплошная черта — сколько доступно. Пунктир — сколько нужно вместе с запасом.</p><p>Пунктир должен быть левее сплошной черты.</p>'],
+ phasechart:['Нагрузка по фазам','<p>В трёхфазной сети у каждой фазы свой автомат. Если одна фаза перегружена, её выбьет, даже если суммарно мощности хватает.</p><p><strong>Красная линия</strong> — лимит, <strong>жёлтый пунктир</strong> — лимит с учётом запаса. Все столбики должны быть ниже пунктира и примерно одной высоты.</p>'],
+ schema:['Схема подключения','<p>Так электричество идёт на площадке: от источника по толстому кабелю к главному дистрибьютору, от него — отдельными линиями к отделам.</p><p>Толщина цветной ветки показывает, сколько линий идёт к отделу.</p>'],
+ conn:['Разъём на вводе','<p>Каким разъёмом главный дистрибьютор подключается к щиту или генератору. Синий — 220 В, красный — 380 В, цифра — максимальный ток.</p><p>Разъём на щите площадки должен совпадать. Если нет — нужен переходник, заранее.</p>'],
+ cable:['Кабель и потеря напряжения','<p><strong>КГ 5×16</strong> — гибкий резиновый кабель: 5 жил по 16 мм² (три фазы, ноль, земля).</p><p><strong>ΔU</strong> — сколько процентов напряжения теряется по дороге. До 4% — нормально, больше — приборы сбоят, кабель греется.</p>'],
+ gen:['Генератор','<p>Генераторы продаются в <strong>кВА</strong>, реальная отдача — примерно кВА × 0,8 в кВт.</p><p>Хорошая загрузка — 30–80%. Меньше 30% вредно для дизеля, больше 80% — нет запаса.</p><p>Топливо посчитано для средней загрузки с запасом 10%.</p>'],
+ lines:['Линии 16 А','<p>Одна линия — это один кабель с автоматом 16 А от дистрибьютора к приборам. Нагружаем её максимум на 80%, около 2,9 кВт.</p><p>Столько выходов нужно на дистрибьюторах и столько кабелей-удлинителей к приборам.</p>'],
+ distro:['Дистрибьютор','<p>Переносной электрощит с автоматами и УЗО: на входе один толстый кабель, на выходе много розеток.</p><p>Обычно у света, звука и видео свои дистры — так проще найти проблему, и помехи не мешают звуку.</p>'],
+ phasesrow:['Токи по фазам','<p>Сколько ампер течёт по каждой фазе. Отдайте эти цифры электрику — он проверит раскладку на месте.</p>']
+};
+CATS.forEach(c=>{INFO['kc_'+c.id]=[`${c.name}: ×${String(c.kc).replace('.',',')}`,`<p>${c.info}</p><p>Значит, от паспортной мощности группы берём ${Math.round(c.kc*100)}%.</p>`];});
+
+const pop=$('#pop'); let popBtn=null;
+function openPop(btn){
+  const d=INFO[btn.dataset.info]; if(!d) return;
+  if(popBtn) popBtn.setAttribute('aria-expanded','false');
+  popBtn=btn; btn.setAttribute('aria-expanded','true');
+  $('#popT').textContent=d[0]; $('#popB').innerHTML=d[1];
+  pop.hidden=false;
+  if(window.innerWidth>600){
+    const r=btn.getBoundingClientRect(), pw=pop.offsetWidth, ph=pop.offsetHeight;
+    let left=r.left+r.width/2-40; left=Math.max(12,Math.min(left,document.documentElement.clientWidth-pw-12));
+    let top=r.bottom+8; if(top+ph>window.innerHeight-8 && r.top-ph-8>8) top=r.top-ph-8;
+    pop.style.left=(left+window.scrollX)+'px'; pop.style.top=(top+window.scrollY)+'px';
+  }
+  $('#popX').focus({preventScroll:true});
+}
+function closePop(ret){
+  if(pop.hidden) return; pop.hidden=true;
+  if(popBtn){popBtn.setAttribute('aria-expanded','false'); if(ret&&document.contains(popBtn)) popBtn.focus({preventScroll:true});}
+  popBtn=null;
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-info]');
+  if(b){e.preventDefault();e.stopPropagation(); if(popBtn===b&&!pop.hidden) closePop(); else openPop(b); return;}
+  if(!pop.hidden&&!e.target.closest('#pop')) closePop();
+},true);
+$('#popX').addEventListener('click',()=>closePop(true));
+document.addEventListener('keydown',e=>{if(e.key==='Escape') closePop(true);});
+$('#results').addEventListener('scroll',()=>{if(popBtn&&popBtn.closest('#results')) closePop();});
+window.addEventListener('resize',()=>closePop());
+
+/* ---------- connector icons ---------- */
+function connIcon(kind,size=34){
+  const s=size;
+  if(kind==='schuko') return `<svg width="${s}" height="${s}" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="15" fill="var(--panel-2)" stroke="var(--muted)" stroke-width="2"/><circle cx="11" cy="17" r="2.6" fill="var(--ink)"/><circle cx="23" cy="17" r="2.6" fill="var(--ink)"/><rect x="15" y="3" width="4" height="4" rx="1" fill="var(--muted)"/><rect x="15" y="27" width="4" height="4" rx="1" fill="var(--muted)"/></svg>`;
+  if(kind==='plock'){const cols=['#8B5A2B','#1d1d1d','#8a8f96','#2A62C9','#3FA34D'];return `<svg width="${s*1.5}" height="${s}" viewBox="0 0 51 34" aria-hidden="true">${cols.map((col,i)=>`<circle cx="${6+i*9.8}" cy="17" r="4.6" fill="${col}" stroke="var(--panel)" stroke-width="1"/>`).join('')}</svg>`;}
+  const red=kind.endsWith('r'), col=red?'var(--red)':'var(--blue)', pins=red?5:3;
+  const amp=kind.match(/\d+/)[0];
+  const pts=[];const r=8.5;
+  for(let i=0;i<pins;i++){const a=(-90+i*360/pins)*Math.PI/180;pts.push([17+r*Math.cos(a),17+r*Math.sin(a)]);}
+  return `<svg width="${s}" height="${s}" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="15" fill="${col}"/><circle cx="17" cy="17" r="12" fill="none" stroke="rgba(255,255,255,.35)"/>${pts.map(([x,y],i)=>`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${i===0?2.6:2}" fill="#fff"/>`).join('')}<text x="17" y="19.6" text-anchor="middle" font-size="7" font-family="JetBrains Mono,monospace" fill="#fff" font-weight="700">${amp}</text></svg>`;
+}
+$('#connGallery').innerHTML=[['schuko','Schuko 16 А'],['cee16b','CEE 16 А, 230 В'],['cee32r','CEE 32 А, 400 В'],['cee63r','CEE 63 А, 400 В'],['cee125r','CEE 125 А, 400 В'],['plock','Powerlock 400 А']].map(([k,n])=>`<figure>${connIcon(k)}<figcaption>${n}</figcaption></figure>`).join('');
+
+/* ---------- render inputs ---------- */
+function renderFormats(){
+  $('#formats').innerHTML=Object.entries(RECIPES).map(([k,r])=>`<button type="button" class="fmt" data-fmt="${k}" aria-pressed="false"><b>${r.n}</b><small>${r.c}</small></button>`).join('');
+  $('#opts').innerHTML=OPTS.map(([k,n])=>`<label class="opt"><input type="checkbox" id="opt-${k}" data-opt="${k}"><span>${n}</span></label>`).join('');
+}
+function renderCfg(){
+  const c=S.cfg;
+  document.querySelectorAll('.fmt').forEach(b=>b.setAttribute('aria-pressed',b.dataset.fmt===c.fmt));
+  let idx=G_STEPS.findIndex(x=>x>=c.g); if(idx<0) idx=G_STEPS.length-1;
+  $('#guests').value=idx; $('#guestsOut').textContent=fmt(c.g,0);
+  $('#guestsLbl').textContent=RECIPES[c.fmt].guestsLabel||'Гостей';
+  $('#where-'+c.where).checked=true; $('#season-'+c.season).checked=true;
+  $('#seasonField').hidden=c.where==='hall';
+  OPTS.forEach(([k])=>{$('#opt-'+k).checked=!!c.opts[k];});
+}
+function renderSource(){
+  $('#src-'+S.src).checked=true;
+  $('#venueFields').hidden=S.src!=='venue';
+  $('#hoursField').hidden=S.src!=='gen';
+  $('#venueVal').value=S.venueUnit==='kw'?S.venueKw:S.venueA;
+  document.querySelectorAll('[data-unit]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.unit===S.venueUnit));
+  $('#venuePh').value=String(S.venuePh);
+  $('#cableLen').value=S.cableLen; $('#hours').value=S.hours;
+  $('#mode-'+S.mode).checked=true; $('#margin').value=String(S.margin); $('#soundSep').checked=!!S.soundSep;
+  $('#srcHint').textContent={
+    socket:'Одна бытовая розетка — это 16 А, около 3,5 кВт. Хватит на пару колонок и ноутбук, не на шоу.',
+    venue:'Спросите у площадки: «Какая выделенная мощность, какой разъём на щите и сколько метров от щита до сцены?»',
+    gen:'Генератор подберём по нагрузке с запасом. Расход топлива — ориентир для дизеля при средней загрузке.'
+  }[S.src];
+}
+
+function renderScreens(){
+  const box=$('#screens'); box.innerHTML='';
+  if(!S.screens.length){box.innerHTML='<p class="hint">Экранов нет. Если будет LED-экран, добавьте его — он часто съедает треть всей мощности.</p>';}
+  S.screens.forEach((s,i)=>{
+    const el=document.createElement('div'); el.className='screen';
+    el.innerHTML=`<div class="fields">
+      <div class="field"><label for="sw${i}">Ширина, м</label><input type="number" id="sw${i}" min="0.5" step="0.5" value="${s.w}" data-si="${i}" data-k="w"></div>
+      <div class="field"><label for="sh${i}">Высота, м</label><input type="number" id="sh${i}" min="0.5" step="0.5" value="${s.h}" data-si="${i}" data-k="h"></div>
+      <div class="field wide"><div class="lab"><label for="st${i}">Тип экрана</label>${I('screentype')}</div><select id="st${i}" data-si="${i}" data-k="type">${Object.entries(SCREEN_TYPES).map(([k,t])=>`<option value="${k}" ${k===s.type?'selected':''}>${t.n} — до ${t.max} Вт/м²</option>`).join('')}</select></div>
+    </div>
+    <div class="screen-viz" id="sv${i}"></div>
+    <div class="screen-stats" id="ss${i}"></div>`;
+    box.appendChild(el);
+    updateScreen(i);
+  });
+}
+function updateScreen(i){
+  const s=S.screens[i]; const w=Math.max(0,+s.w||0), h=Math.max(0,+s.h||0);
+  const t=SCREEN_TYPES[s.type]||SCREEN_TYPES.in;
+  const area=w*h, maxW=area*t.max, cols=Math.round(w/0.5), rows=Math.round(h/0.5);
+  const lines=maxW>0?Math.ceil(maxW*SCREEN.kc/SCREEN.pf/LINE_VA):0;
+  const person=1.75, pad=0.4, gap=0.6;
+  const worldW=pad+0.5+gap+w+pad, worldH=Math.max(h,person)+pad*2;
+  const VW=260, VH=150, sc=Math.min(VW/worldW,VH/worldH);
+  const ox=(VW-worldW*sc)/2, base=VH-(VH-worldH*sc)/2-pad*sc;
+  const sx=ox+(pad+0.5+gap)*sc, sy=base-h*sc;
+  let grid='';
+  if(cols<=80&&rows<=60){
+    for(let c=1;c<cols;c++) grid+=`<line x1="${(sx+c*0.5*sc).toFixed(1)}" y1="${sy.toFixed(1)}" x2="${(sx+c*0.5*sc).toFixed(1)}" y2="${base.toFixed(1)}"/>`;
+    for(let r=1;r<rows;r++) grid+=`<line x1="${sx.toFixed(1)}" y1="${(sy+r*0.5*sc).toFixed(1)}" x2="${(sx+w*sc).toFixed(1)}" y2="${(sy+r*0.5*sc).toFixed(1)}"/>`;
+  }
+  const px=ox+(pad+0.25)*sc, ph=person*sc, hr=ph*0.075;
+  $('#sv'+i).innerHTML=`<svg viewBox="0 0 ${VW} ${VH}" role="img" aria-label="Экран ${fmt(w)} на ${fmt(h)} метра рядом с человеком ростом 1,75 м">
+    <line x1="0" y1="${base}" x2="${VW}" y2="${base}" stroke="var(--line)" stroke-width="1"/>
+    <rect x="${sx}" y="${sy}" width="${w*sc}" height="${h*sc}" fill="var(--c-screen)" opacity=".9" rx="1"/>
+    <g stroke="var(--panel)" stroke-opacity=".45" stroke-width=".7">${grid}</g>
+    <g fill="var(--muted)"><circle cx="${px}" cy="${base-ph+hr}" r="${hr}"/><rect x="${px-ph*0.11}" y="${base-ph+hr*2.3}" width="${ph*0.22}" height="${ph*0.5}" rx="${ph*0.06}"/><rect x="${px-ph*0.09}" y="${base-ph*0.42}" width="${ph*0.075}" height="${ph*0.42}"/><rect x="${px+ph*0.015}" y="${base-ph*0.42}" width="${ph*0.075}" height="${ph*0.42}"/></g>
+    <text x="${Math.max(px,17)}" y="${base-ph-4}" text-anchor="middle" font-size="9" fill="var(--muted)" font-family="JetBrains Mono,monospace">1,75 м</text>
+  </svg>`;
+  $('#ss'+i).innerHTML=`<span><b>${fmt(area)}</b> м²</span><span><b>${cols*rows}</b> ${plural(cols*rows,'кабинет','кабинета','кабинетов')} 50×50</span><span>до <b>${fmt(maxW/1000)}</b> кВт</span><span><b>${lines}</b> ${plural(lines,'линия','линии','линий')} 16 А</span><button class="linkbtn x" type="button" data-rmscreen="${i}">Убрать</button>`;
+}
+
+function rowHTML(c,it,idx){
+  const on=+it.q>0, big=+it.w>=5000;
+  const tag=`<button type="button" class="tag" data-info="big" aria-label="Что значит 380 В">380 В</button>`;
+  const nm=it.custom?`<input class="nm" id="n-${c.id}-${it.id}" value="${esc(it.n)}" data-cat="${c.id}" data-idx="${idx}" data-k="n" aria-label="Название прибора">`
+                    :`<span class="nm">${esc(it.n)}${tag}</span>`;
+  return `<div class="row${on?' on':''}${big?' three':''}">
+    ${nm}
+    <label class="w"><input type="number" id="w-${c.id}-${it.id}" min="0" step="10" value="${it.w}" data-cat="${c.id}" data-idx="${idx}" data-k="w" aria-label="Мощность, ватт"><span>Вт</span></label>
+    <div class="step"><button type="button" data-step="-1" data-cat="${c.id}" data-idx="${idx}" aria-label="Меньше">−</button><input type="number" id="q-${c.id}-${it.id}" min="0" step="1" value="${it.q}" data-cat="${c.id}" data-idx="${idx}" data-k="q" aria-label="Количество"><button type="button" data-step="1" data-cat="${c.id}" data-idx="${idx}" aria-label="Больше">+</button></div>
+    ${it.custom?`<button type="button" class="rm" data-rm="${idx}" data-cat="${c.id}" aria-label="Удалить прибор">×</button>`:'<span class="sp"></span>'}
+  </div>`;
+}
+function renderEquip(keepOpen){
+  const box=$('#equip');
+  const open=new Set(keepOpen?[...box.querySelectorAll('details[open]')].map(d=>d.dataset.cat):[]);
+  box.innerHTML='';
+  CATS.forEach(c=>{
+    const d=document.createElement('details'); d.className='cat'; d.dataset.cat=c.id; d.style.setProperty('--cc',`var(--c-${c.id})`);
+    d.open=keepOpen?open.has(c.id):S.items[c.id].some(it=>+it.q>0);
+    d.innerHTML=`<summary><span class="chip"></span><span class="cat-name">${c.name}</span><button type="button" class="cat-kc" data-info="kc_${c.id}" aria-label="Почему ×${c.kc}">×${String(c.kc).replace('.',',')}</button><span class="cat-sum" id="cs-${c.id}"></span><span class="caret"></span></summary>
+      <div class="rows">${S.items[c.id].map((it,idx)=>rowHTML(c,it,idx)).join('')}</div>
+      <button class="addbtn" type="button" data-add="${c.id}">+ Свой прибор</button>`;
+    box.appendChild(d);
+  });
+}
+
+/* ---------- calc ---------- */
+function pickConn(I,nph,src){
+  if(src==='socket') return {k:'schuko',short:'Schuko 16 А',n:'Schuko 16 А (обычная розетка)',A:16};
+  if(nph===1){
+    if(I<=16) return {k:'cee16b',short:'CEE 16 А',n:'CEE 16 А, 3 контакта (синий) или Schuko',A:16};
+    if(I<=32) return {k:'cee32b',short:'CEE 32 А',n:'CEE 32 А, 3 контакта (синий)',A:32};
+    if(I<=63) return {k:'cee63b',short:'CEE 63 А',n:'CEE 63 А, 3 контакта (синий)',A:63};
+    return {k:'cee63b',short:'CEE 63 А',n:'Одной фазы мало — нужна трёхфазная сеть',A:63,fail:true};
+  }
+  const t=[[16,'cee16r','CEE 16 А, 5 контактов (красный)'],[32,'cee32r','CEE 32 А, 5 контактов (красный)'],[63,'cee63r','CEE 63 А, 5 контактов (красный)'],[125,'cee125r','CEE 125 А, 5 контактов (красный)'],[400,'plock','Powerlock 400 А']];
+  for(const [a,k,n] of t) if(I<=a) return {k,short:n.split(',')[0],n,A:a};
+  const m=Math.ceil(I/400); return {k:'plock',short:`${m}×Powerlock`,n:`${m} ввода Powerlock 400 А`,A:400*m,multi:m};
+}
+function pickCable(Id,I,L,nph){
+  const dU=(s,runs)=>nph===3? Math.sqrt(3)*I*L*RHO*0.95/(s*runs)/400*100 : 2*I*L*RHO/(s*runs)/230*100;
+  for(let runs=1;runs<=6;runs++){
+    for(const [s,a] of CABLES){ if(a*runs>=Id && dU(s,runs)<=4) return {s,runs,dU:dU(s,runs),ok:true}; }
+  }
+  return {s:240,runs:6,dU:dU(240,6),ok:false};
+}
+function cableLabel(c,nph,conn){
+  const s=String(c.s).replace('.',',');
+  if(conn.k==='plock') return `${c.runs>1?c.runs+' линии по ':''}5 одножильных 1×${s} мм²`;
+  if(nph===1) return `${c.runs>1?c.runs+' × ':''}КГ 3×${s}`;
+  return `${c.runs>1?c.runs+' × ':''}КГ 5×${s}`;
+}
+
+function compute(){
+  const worst=S.mode==='worst', m=S.margin/100;
+  const nph=S.src==='socket'?1:S.src==='venue'?+S.venuePh:3;
+  const groups={};
+  {let nom=0,lines=0;const k=worst?1:SCREEN.kc;
+    S.screens.forEach(s=>{const a=Math.max(0,+s.w||0)*Math.max(0,+s.h||0);const n=a*(SCREEN_TYPES[s.type]||SCREEN_TYPES.in).max;nom+=n;if(n>0)lines+=Math.ceil(n*k/SCREEN.pf/LINE_VA);});
+    groups.screen={id:'screen',nom,P:nom*k,S:nom*k/SCREEN.pf,bigS:0,bigN:0,rest:nom*k/SCREEN.pf,lines,count:S.screens.length};}
+  CATS.forEach(c=>{
+    const k=worst?1:c.kc; let nom=0,bigNom=0,bigN=0,count=0;
+    S.items[c.id].forEach(it=>{const w=Math.max(0,+it.w||0),q=Math.max(0,Math.round(+it.q||0));nom+=w*q;count+=q;if(w>=5000&&q>0){bigNom+=w*q;bigN+=q;}});
+    const P=nom*k,Sv=P/c.pf,bigS=bigNom*k/c.pf,rest=Sv-bigS;
+    groups[c.id]={id:c.id,nom,P,S:Sv,bigS,bigN,rest,lines:rest>1?Math.ceil(rest/LINE_VA):0,count};
+  });
+  const G=ORDER.map(id=>groups[id]);
+  const ph=Array.from({length:nph},()=>({va:0,by:{}}));
+  const add=(i,cid,va)=>{ph[i].va+=va;ph[i].by[cid]=(ph[i].by[cid]||0)+va;};
+  const minI=()=>ph.reduce((b,p,i)=>p.va<ph[b].va-0.01?i:b,0);
+  let soundBlock=false, soundTooBig=false;
+  if(nph===1){G.forEach(g=>{if(g.S>0)add(0,g.id,g.S);});}
+  else{
+    G.forEach(g=>{if(g.bigS>0)for(let i=0;i<nph;i++)add(i,g.id,g.bigS/nph);});
+    const totalRest=G.reduce((s,g)=>s+Math.max(0,g.rest),0), snd=groups.sound;
+    if(S.soundSep&&snd.rest>1){ if(snd.rest<=totalRest/nph*1.15){add(minI(),'sound',snd.rest);soundBlock=true;} else soundTooBig=true; }
+    const pieces=[];
+    G.forEach(g=>{if(g.rest<=1||(soundBlock&&g.id==='sound'))return;const n=Math.max(1,g.lines);for(let j=0;j<n;j++)pieces.push({cid:g.id,va:g.rest/n});});
+    pieces.sort((a,b)=>b.va-a.va).forEach(p=>add(minI(),p.cid,p.va));
+  }
+  const soundPhase=soundBlock?ph.findIndex(p=>(p.by.sound||0)>0):-1;
+  const P=G.reduce((s,g)=>s+g.P,0), Stot=G.reduce((s,g)=>s+g.S,0), nom=G.reduce((s,g)=>s+g.nom,0);
+  const phI=ph.map(p=>p.va/230), maxI=Math.max(0,...phI), minPh=Math.min(...phI);
+  const imb=nph>1&&maxI>0?(maxI-minPh)/maxI:0;
+  const Id=maxI*(1+m);
+  let availA, gen=null, availKW;
+  if(S.src==='socket'){availA=16;availKW=3.68;}
+  else if(S.src==='venue'){
+    if(S.venueUnit==='kw'){availKW=Math.max(0,+S.venueKw||0);availA=availKW*1000/(nph*230);}
+    else{availA=Math.max(0,+S.venueA||0);availKW=availA*230*nph/1000;}
+  } else {
+    const need=Math.max(Stot,3*maxI*230)*(1+m)/1000;
+    let size=GENS.find(x=>x>=need), count=1;
+    if(!size){count=Math.ceil(need/1000);size=GENS.find(x=>x>=need/count);}
+    const genKW=size*count*0.8, avgKW=P/1000*0.75;
+    const lh=0.06*genKW+0.21*avgKW;
+    gen={need,size,count,load:Stot/1000/(size*count),lh,fuel:Math.ceil(lh*(+S.hours||0)*1.1/10)*10,perA:size*count*1000/(3*230)};
+    availA=gen.perA; availKW=size*count*0.8;
+  }
+  let status;
+  if(maxI<0.05) status='empty';
+  else if(S.src==='gen') status='gen';
+  else if(Id<=availA) status='ok';
+  else if(maxI<=availA) status='tight';
+  else status='over';
+  const conn=pickConn(Id,nph,S.src);
+  const cable=pickCable(Math.max(Id,1),Math.max(maxI,0.1),Math.max(1,+S.cableLen||1),nph);
+  const lines16=G.reduce((s,g)=>s+g.lines,0), big=G.reduce((s,g)=>s+g.bigN,0);
+  return {G,groups,ph,phI,maxI,imb,Id,nph,P,Stot,nom,availA,availKW,gen,status,conn,cable,lines16,big,m,soundBlock,soundTooBig,soundPhase,worst};
+}
+
+/* ---------- render results ---------- */
+function render(){
+  const R=compute();
+  CATS.forEach(c=>{const g=R.groups[c.id];$('#cs-'+c.id).innerHTML=g.count?`${g.count} шт · <b>${fmt(g.P/1000)}</b> кВт`:'—';});
+  const v=$('#verdict'); v.dataset.state=R.status;
+  const kW=R.P/1000, pk=R.nom/1000, kettles=Math.round(kW/2);
+  const phW=R.nph===3?'самая загруженная фаза':'ток';
+  let pill,head,sub;
+  const pct=R.availA?Math.round(R.maxI/R.availA*100):0;
+  if(R.status==='empty'){pill='Нет нагрузки';head='Добавьте оборудование';sub='Выберите формат мероприятия или укажите технику вручную.';}
+  else if(R.status==='ok'){pill='Хватает';head=`Хватает с запасом ${S.margin}%`;sub=`${cap(phW)} — ${fmt(R.maxI,0)} А из ${fmt(R.availA,0)} А доступных (${pct}%).`;}
+  else if(R.status==='tight'){pill='Впритык';head='Хватает, но без нужного запаса';sub=`${cap(phW)} — ${fmt(R.maxI,0)} А из ${fmt(R.availA,0)} А (${pct}%). Любой лишний чайник может выбить автомат.`;}
+  else if(R.status==='over'){const defKW=(R.Id-R.availA)*230*R.nph/1000;pill='Не хватает';head=`Не хватает ≈ ${fmt(defKW,0)} кВт`;sub=`${cap(phW)} — ${fmt(R.maxI,0)} А, а площадка даёт ${fmt(R.availA,0)} А${R.nph===3?' на фазу':''}.`;}
+  else {const g=R.gen;pill='Генератор';head=`Нужен генератор ${g.count>1?g.count+' × ':''}${g.size} кВА`;sub=`Загрузка ${Math.round(g.load*100)}%${g.load<0.3?' — маловато':' — нормально'}. Дизеля ≈ ${fmt(g.fuel,0)} л на ${S.hours} ч.`;}
+  const capKW=R.availKW, needKW=kW*(1+R.m), scale=Math.max(capKW,needKW,pk*0.2,1)*1.08;
+  const segs=R.G.filter(g=>g.P>0).map(g=>`<span style="width:${(g.P/1000/scale*100).toFixed(2)}%;background:var(--c-${g.id})" title="${NAMES[g.id]}: ${fmt(g.P/1000)} кВт"></span>`).join('');
+  const capPos=capKW/scale*100, needPos=needKW/scale*100;
+  const capLabel=S.src==='gen'?`генератор <b>${fmt(capKW,0)} кВт</b>`:S.src==='socket'?'розетка <b>3,7 кВт</b>':`площадка <b>${fmt(capKW,0)} кВт</b>`;
+  v.innerHTML=`<span class="pill"><i></i>${pill}</span>
+    <div class="v-head">${head}</div>
+    <p class="v-sub">${sub}</p>
+    <div class="v-nums"><div class="big num" aria-label="Расчётная нагрузка">${fmt(kW)}<small>кВт</small></div>
+      <div class="v-meta"><span class="lab">расчётная нагрузка${R.worst?' (всё на максимум)':''}${I('load')}</span>${!R.worst?`<span>если всё на 100%: <b>${fmt(pk)} кВт</b></span>`:''}<span>как <b>${kettles}</b> ${plural(kettles,'электрочайник','электрочайника','электрочайников')} разом</span></div></div>
+    ${R.status==='empty'?'':`<div class="meter"><div class="meter-bar"><div class="meter-track">${segs}</div>
+      <div class="mk" style="left:${capPos}%"></div>
+      <div class="mk dash" style="left:${needPos}%"></div></div>
+      <div class="keys"><span><i></i>${capLabel}</span><span><i class="dash"></i>нужно с запасом <b>${fmt(needKW,0)} кВт</b></span></div></div>
+    <div class="legend">${R.G.filter(g=>g.P>0).map(g=>`<span><i style="background:var(--c-${g.id})"></i>${NAMES[g.id]} <b>${fmt(g.P/1000)}</b></span>`).join('')}${I('meter','Как читать шкалу')}</div>`}`;
+  renderPhases(R); renderSchema(R); renderSpec(R); renderTips(R);
+  const col={ok:'var(--ok)',tight:'var(--warn)',over:'var(--bad)',gen:'var(--genc)',empty:'var(--faint)'}[R.status];
+  $('#mbDot').style.background=col;
+  $('#mbTxt').innerHTML=`<b>${fmt(kW)} кВт</b> · ${pill}`;
+  window.__R=R;
+}
+
+function renderPhases(R){
+  const lim=R.availA, softLim=R.availA/(1+R.m);
+  const top=Math.max(lim,R.maxI,1)*1.15;
+  const step=niceStep(top/4);
+  let axis='';for(let v=0;v<=top;v+=step)axis+=`<span style="bottom:${v/top*100}%">${v}</span>`;
+  const cols=R.ph.map(p=>{
+    const I_=p.va/230;
+    const segs=ORDER.filter(id=>p.by[id]>0).map(id=>`<span style="height:${(p.by[id]/230/top*170).toFixed(1)}px;background:var(--c-${id})" title="${NAMES[id]}: ${fmt(p.by[id]/230,0)} А"></span>`).join('');
+    return `<div class="ph-col"><div class="ph-stack">${segs}</div><div class="ph-val" style="bottom:${Math.min(I_/top*100,100)}%;color:${I_>lim?'var(--bad)':'var(--ink)'}">${fmt(I_,0)} А</div></div>`;
+  }).join('');
+  const names=R.ph.map((p,i)=>`<div>${R.nph===1?'Фаза':'L'+(i+1)}<small>${fmt(p.va/1000,1)} кВА${i===R.soundPhase?' · звук':''}</small></div>`).join('');
+  $('#phases').innerHTML=`<div class="ph-axis">${axis}</div>
+    <div class="ph-area">${cols}
+      <div class="ph-limit" style="bottom:${lim/top*100}%"></div>
+      <div class="ph-limit soft" style="bottom:${softLim/top*100}%"></div>
+    </div>
+    <div class="ph-names">${names}</div>
+    <div class="keys"><span><i class="red"></i>лимит <b>${fmt(lim,0)} А</b></span><span><i class="yel"></i>с запасом <b>${fmt(softLim,0)} А</b></span></div>`;
+  $('#imbTxt').innerHTML=R.nph>1&&R.maxI>0?`<span class="lab">перекос ${Math.round(R.imb*100)}%<button type="button" class="i" data-info="imb" aria-label="Что такое перекос">i</button></span>`:'';
+  $('#phNote').textContent=R.nph===1
+    ?'Всё сидит на одной фазе. Лимит — ток автомата на линии.'
+    :'Нагрузку раскидали по фазам поровну. Столбик выше красной линии — автомат на этой фазе выбьет, даже если суммарно мощности хватает.';
+}
+INFO.imb=['Перекос фаз','<p>Насколько самая пустая фаза легче самой загруженной. Нормально — до 20–25%.</p><p>Большой перекос значит, что одна фаза упрётся в лимит раньше остальных, а мощность других простаивает.</p>'];
+function niceStep(x){const p=10**Math.floor(Math.log10(Math.max(x,1)));for(const k of [1,2,2.5,5,10])if(k*p>=x)return k*p;return 10*p;}
+
+function renderSchema(R){
+  const act=R.G.filter(g=>g.P>0);
+  const n=Math.max(act.length,1), rowH=44, W=460, H=Math.max(150,n*rowH+20);
+  const cy=H/2;
+  const stCol={ok:'var(--ok)',tight:'var(--warn)',over:'var(--bad)',gen:'var(--genc)',empty:'var(--faint)'}[R.status];
+  const srcName={socket:'Розетка',venue:'Щит площадки',gen:'Генератор'}[S.src];
+  const srcVal=S.src==='gen'?`${R.gen.count>1?R.gen.count+'×':''}${R.gen.size} кВА`:S.src==='socket'?'16 А · 220 В':`${fmt(R.availKW,0)} кВт · ${R.nph===3?'380':'220'} В`;
+  const cab=cableLabel(R.cable,R.nph,R.conn);
+  const cabShort=R.conn.k==='plock'?`5×1×${String(R.cable.s).replace('.',',')}${R.cable.runs>1?' ×'+R.cable.runs:''}`:cab;
+  const T=(x,y,t,size,cls,o='')=>`<text x="${x}" y="${y}" font-size="${size}" class="${cls}" ${o}>${t}</text>`;
+  const MONO='font-family="JetBrains Mono,monospace"', SANS='font-family="Golos Text,sans-serif"';
+  let br='';
+  act.forEach((g,i)=>{
+    const y=10+i*rowH+(H-20-n*rowH)/2, yc=y+rowH/2;
+    const lines=g.lines+(g.bigN||0);
+    const sub=`${g.lines}×16А${g.bigN?' +'+g.bigN+'×380В':''} · ${fmt(g.P/1000)} кВт`;
+    br+=`<path d="M282 ${cy} C 300 ${cy}, 296 ${yc}, 312 ${yc}" fill="none" stroke="var(--c-${g.id})" stroke-width="${Math.min(2+lines*0.4,6)}" stroke-linecap="round"/>
+      <rect x="312" y="${yc-17}" width="146" height="34" rx="5" class="s-box"/>
+      <rect x="312" y="${yc-17}" width="5" height="34" rx="2" fill="var(--c-${g.id})"/>
+      ${T(323,yc-3,NAMES[g.id],11.5,'s-ink',SANS+' font-weight="600"')}
+      ${T(323,yc+11,sub,9.5,'s-muted',MONO)}`;
+  });
+  if(!act.length) br=T(385,cy+4,'нет нагрузки',11,'s-muted',SANS+' text-anchor="middle"');
+  const icon=connIcon(R.conn.k).replace(/<svg[^>]*>|<\/svg>/g,'');
+  const iw=R.conn.k==='plock'?51:34;
+  if($('#schema').clientWidth<430){
+    // вертикальная схема для телефона
+    const VW=320, cx=160, rows=Math.ceil(n/2), by0=226, VH=by0+rows*42+4;
+    const lastY=by0+(rows-1)*42+17;
+    let vb=act.length?`<line x1="${cx}" y1="192" x2="${cx}" y2="${lastY}" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/>`:'';
+    act.forEach((g,i)=>{
+      const right=i%2, bx=right?174:6, by=by0+Math.floor(i/2)*42, lines=g.lines+(g.bigN||0);
+      const sub=`${g.lines}×16А${g.bigN?' +'+g.bigN+'×380В':''} · ${fmt(g.P/1000)} кВт`;
+      vb+=`<line x1="${cx}" y1="${by+17}" x2="${right?bx:bx+140}" y2="${by+17}" stroke="var(--c-${g.id})" stroke-width="${Math.min(2+lines*0.4,5)}"/>
+        <circle cx="${cx}" cy="${by+17}" r="3" fill="var(--c-${g.id})"/>
+        <rect x="${bx}" y="${by}" width="140" height="34" rx="5" class="s-box"/>
+        <rect x="${bx}" y="${by}" width="5" height="34" rx="2" fill="var(--c-${g.id})"/>
+        ${T(bx+11,by+14,NAMES[g.id],11,'s-ink',SANS+' font-weight="600"')}
+        ${T(bx+11,by+27,sub,9,'s-muted',MONO)}`;
+    });
+    if(!act.length) vb=T(cx,by0+16,'нет нагрузки',11,'s-muted',SANS+' text-anchor="middle"');
+    $('#schema').innerHTML=`<svg viewBox="0 0 ${VW} ${VH}" role="img" aria-label="Схема: ${srcName}, кабель ${esc(cab)}, главный дистрибьютор, ${act.length} направлений" style="min-width:0">
+      <rect x="${cx-72}" y="4" width="144" height="58" rx="7" fill="var(--panel)" stroke="${stCol}" stroke-width="2"/>
+      ${T(cx,20,'ИСТОЧНИК',9,'s-muted',SANS+' text-anchor="middle" letter-spacing=".06em"')}
+      ${T(cx,37,srcName,12,'s-ink',SANS+' text-anchor="middle" font-weight="600"')}
+      ${T(cx,53,srcVal,9.5,'s-muted',MONO+' text-anchor="middle"')}
+      <line x1="${cx}" y1="62" x2="${cx}" y2="122" stroke="var(--ink)" stroke-width="6" stroke-linecap="round"/>
+      <line x1="${cx}" y1="62" x2="${cx}" y2="122" stroke="${stCol}" stroke-width="2" stroke-dasharray="1 7" stroke-linecap="round"/>
+      ${T(cx+14,89,esc(cabShort),9.5,'s-ink',MONO)}
+      ${T(cx+14,103,`${S.cableLen} м · ΔU ${fmt(R.cable.dU)}%`,9.5,'s-muted',MONO)}
+      <rect x="${cx-72}" y="122" width="144" height="70" rx="7" class="s-strong"/>
+      ${T(cx,138,'ГЛАВНЫЙ ДИСТР',8.5,'s-muted',SANS+' text-anchor="middle" letter-spacing=".05em"')}
+      <g transform="translate(${cx-iw*0.3},144) scale(.6)">${icon}</g>
+      ${T(cx,184,esc(R.conn.short),9.5,'s-ink',MONO+' text-anchor="middle"')}
+      ${vb}
+    </svg>`;
+    return;
+  }
+  $('#schema').innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Схема: ${srcName}, кабель ${esc(cab)}, главный дистрибьютор, ${act.length} направлений">
+    <rect x="3" y="${cy-38}" width="98" height="76" rx="7" fill="var(--panel)" stroke="${stCol}" stroke-width="2"/>
+    ${T(52,cy-14,'ИСТОЧНИК',9,'s-muted',SANS+' text-anchor="middle" letter-spacing=".06em"')}
+    ${T(52,cy+3,srcName,11.5,'s-ink',SANS+' text-anchor="middle" font-weight="600"')}
+    ${T(52,cy+20,srcVal,9.5,'s-muted',MONO+' text-anchor="middle"')}
+    <line x1="101" y1="${cy}" x2="186" y2="${cy}" stroke="var(--ink)" stroke-width="6" stroke-linecap="round"/>
+    <line x1="101" y1="${cy}" x2="186" y2="${cy}" stroke="${stCol}" stroke-width="2" stroke-dasharray="1 7" stroke-linecap="round"/>
+    ${T(143.5,cy-11,esc(cabShort),9.5,'s-ink',MONO+' text-anchor="middle"')}
+    ${T(143.5,cy+20,`${S.cableLen} м · ΔU ${fmt(R.cable.dU)}%`,9.5,'s-muted',MONO+' text-anchor="middle"')}
+    <rect x="186" y="${cy-38}" width="96" height="76" rx="7" class="s-strong"/>
+    ${T(234,cy-20,'ГЛАВНЫЙ ДИСТР',8.5,'s-muted',SANS+' text-anchor="middle" letter-spacing=".05em"')}
+    <g transform="translate(${234-iw*0.3},${cy-14}) scale(.6)">${icon}</g>
+    ${T(234,cy+28,esc(R.conn.short),9.5,'s-ink',MONO+' text-anchor="middle"')}
+    ${br}
+  </svg>`;
+}
+
+function specRow(dt,dd,info){return `<div class="spec-row"><dt><span class="lab">${dt}${info?I(info):''}</span></dt><dd>${dd}</dd></div>`;}
+function renderSpec(R){
+  let h='';
+  if(R.status==='empty'){$('#spec').innerHTML=specRow('Пока пусто','<span>Добавьте оборудование — здесь появится список для заказа.</span>');return;}
+  h+=specRow('Подключение',`<span><b>${R.nph===3?'3 фазы · 380 В':'1 фаза · 220 В'}</b><small>до ${fmt(R.maxI,0)} А на фазу, с запасом ${fmt(R.Id,0)} А</small></span>`,'net');
+  h+=specRow('Разъём на вводе',`${connIcon(R.conn.k,28)}<span><b>${esc(R.conn.n)}</b><small>${S.src==='venue'?'Уточните, что стоит на щите площадки — нужен такой же или переходник':S.src==='gen'?'Такой выход должен быть на генераторе':'Бытовая розетка'}</small></span>`,'conn');
+  h+=specRow('Кабель до сцены',`<span><b>${esc(cableLabel(R.cable,R.nph,R.conn))}, ${S.cableLen} м</b><small>Потеря напряжения ${fmt(R.cable.dU)}%${R.cable.ok?' — в норме':' — много, нужен промежуточный щит ближе к сцене'}</small></span>`,'cable');
+  if(R.gen) h+=specRow('Генератор',`<span><b>${R.gen.count>1?R.gen.count+' × ':''}${R.gen.size} кВА, дизель</b><small>Загрузка ${Math.round(R.gen.load*100)}% · ≈ ${fmt(R.gen.lh)} л/ч · на ${S.hours} ч ≈ ${fmt(R.gen.fuel,0)} л с запасом</small></span>`,'gen');
+  h+=specRow('Линии 16 А',`<span><b>${R.lines16} ${plural(R.lines16,'линия','линии','линий')} Schuko${R.big?` + ${R.big} × CEE 380 В`:''}</b><small>${R.G.filter(g=>g.lines||g.bigN).map(g=>`${NAMES[g.id]} ${g.lines}${g.bigN?'+'+g.bigN:''}`).join(' · ')}</small></span>`,'lines');
+  h+=specRow('Дистрибьюторы',`<span><b>${distroText(R)}</b><small>Отдельные дистры для звука и света — проще искать проблему и меньше помех</small></span>`,'distro');
+  if(R.nph===3) h+=specRow('Фазы',`<span class="mono">${R.phI.map((I_,i)=>`L${i+1} ${fmt(I_,0)} А`).join(' · ')}</span>`,'phasesrow');
+  $('#spec').innerHTML=h;
+}
+function distroText(R){
+  const deps=R.G.filter(g=>g.lines||g.bigN);
+  const main=`Главный с вводом ${R.conn.short}`;
+  if(deps.length<=1) return main;
+  const named=deps.filter(g=>['light','sound','screen','video'].includes(g.id)).length||1;
+  return `${main} + ${named} ${plural(named,'отдельный дистр','отдельных дистра','отдельных дистров')} по отделам`;
+}
+
+function renderTips(R){
+  const t=[];
+  if(R.status==='empty'){$('#tips').innerHTML='<li class="info">Выберите формат или добавьте технику — здесь появятся советы по вашей схеме.</li>';return;}
+  if(R.status==='over'){
+    const extra=Math.max(0,(R.Id-R.availA)*230*R.nph/1000/0.8);
+    const g=GENS.find(x=>x>=extra)||Math.ceil(extra/100)*100;
+    const heavy=R.G.filter(x=>x.P>0).sort((a,b)=>b.P-a.P)[0];
+    t.push(['bad',`Мощности не хватает. Варианты: попросить площадку поднять лимит, взять дополнительный генератор ≈ ${g} кВА под самую тяжёлую часть (сейчас это «${NAMES[heavy.id]}», ${fmt(heavy.P/1000)} кВт) или сократить технику.`]);
+  }
+  if(R.status==='tight') t.push(['warn',`Запас меньше ${S.margin}%. Договоритесь, что кейтеринг и гримёрки питаются от отдельной линии, не от сцены.`]);
+  if(S.src==='socket'&&R.P>3000) t.push(['bad','От одной розетки больше 3,5 кВт не взять, и то если на этой линии больше ничего нет. Для шоу нужен щит площадки или генератор.']);
+  if(R.conn.fail) t.push(['bad','Для такой нагрузки одной фазы мало. Спросите у площадки трёхфазный щит 380 В.']);
+  if(R.nph===1&&R.big) t.push(['bad','Есть приборы на 380 В (мощнее 5 кВт). Им нужна трёхфазная сеть.']);
+  if(R.nph>1&&R.imb>0.25) t.push(['warn',`Перекос фаз ${Math.round(R.imb*100)}% — больше нормы 20–25%. Попросите электрика перекинуть часть линий${R.soundBlock?' или отключите «звук на отдельной фазе»':''}.`]);
+  if(R.soundTooBig) t.push(['info','Звука слишком много, чтобы уместить его на одну фазу — разнесли по всем трём. Лучше дать звуку отдельный дистр.']);
+  if(R.soundBlock) t.push(['ok',`Звук собран на фазе L${R.soundPhase+1} — меньше риск гула от света и экранов.`]);
+  if(R.nph>1&&!S.soundSep&&R.groups.sound.P>0) t.push(['info','Звук делит фазы со светом и экраном. Если появится гул в колонках, первым делом разнесите их по разным фазам.']);
+  if(R.groups.screen.P>0) t.push(['warn','LED-экран при включении берёт кратковременно в разы больше тока. Включайте его секциями, а не одним рубильником.']);
+  if(R.gen&&R.gen.load<0.3) t.push(['warn','Генератор будет загружен меньше чем на 30%. Дизелю это вредно — можно взять модель поменьше или поставить нагрузочный модуль.']);
+  if(R.gen&&R.gen.load>=0.3) t.push(['info','Заложите резервный генератор или хотя бы ИБП для звукового и светового пультов: если генератор заглохнет, шоу не потеряет настройки.']);
+  if(!R.cable.ok) t.push(['warn',`${S.cableLen} м — слишком далеко даже для толстого кабеля. Поставьте промежуточный щит ближе к сцене или генератор ближе.`]);
+  else if(R.cable.dU>3) t.push(['info','Потеря напряжения близка к пределу. Кабель короче или толще — надёжнее.']);
+  const clim=R.groups.climate;if(clim.P>0&&clim.P>R.P*0.2) t.push(['warn',`Климат — ${Math.round(clim.P/R.P*100)}% всей нагрузки. Обогреватели работают на полную всё время, для них нет скидки.`]);
+  if(R.groups.food.P>0) t.push(['info','Кейтеринг — на отдельные линии и лучше на отдельный дистр. Кофемашина, включившаяся во время шоу, не должна выбить свет.']);
+  if(S.src==='venue') t.push(['info','Подключение к щиту площадки делает только электрик с допуском. Спросите, кто это будет: площадка или ваш подрядчик.']);
+  if(S.cfg.where!=='hall') t.push(['info','На улице разъёмы держите выше земли и под навесом, дистры — с защитой от влаги (IP44 и выше).']);
+  t.push(['info','Кабели на проходах гостей — в кабель-каналы.']);
+  $('#tips').innerHTML=t.map(([c,x])=>`<li class="${c}">${x}</li>`).join('');
+}
+
+function summaryText(){
+  const R=window.__R; if(!R||R.status==='empty') return 'Нагрузка пока не указана.';
+  const c=S.cfg, L=[];
+  L.push('РАСЧЁТ ЭЛЕКТРИКИ МЕРОПРИЯТИЯ');
+  L.push(`Формат: ${RECIPES[c.fmt].n}, ${fmt(c.g,0)} ${guestWord(c)}, ${{hall:'зал',street:'улица',tent:'шатёр'}[c.where]}`);
+  L.push(`Расчётная нагрузка: ${fmt(R.P/1000)} кВт${R.worst?' (всё на максимум)':`, если всё на 100%: ${fmt(R.nom/1000)} кВт`}`);
+  L.push(`Источник: ${{socket:'розетка 220 В',venue:`щит площадки, ${fmt(R.availKW,0)} кВт`,gen:'генератор'}[S.src]}`);
+  L.push(`Подключение: ${R.nph===3?'3 фазы 380 В':'1 фаза 220 В'}, до ${fmt(R.maxI,0)} А на фазу (с запасом ${S.margin}%: ${fmt(R.Id,0)} А)`);
+  if(R.nph===3) L.push(`По фазам: ${R.phI.map((I_,i)=>`L${i+1} ${fmt(I_,0)} А`).join(' · ')}`);
+  L.push(`Разъём на вводе: ${R.conn.n}`);
+  L.push(`Кабель: ${cableLabel(R.cable,R.nph,R.conn)}, ${S.cableLen} м (потеря напряжения ${fmt(R.cable.dU)}%)`);
+  if(R.gen) L.push(`Генератор: ${R.gen.count>1?R.gen.count+' × ':''}${R.gen.size} кВА, загрузка ${Math.round(R.gen.load*100)}%, дизель ≈ ${fmt(R.gen.fuel,0)} л на ${S.hours} ч`);
+  L.push(`Линий 16 А: ${R.lines16}${R.big?`, плюс ${R.big} × CEE 380 В`:''}`);
+  L.push('');L.push('По отделам:');
+  R.G.filter(g=>g.P>0).forEach(g=>L.push(`— ${NAMES[g.id]}: ${fmt(g.P/1000)} кВт, ${g.lines} ${plural(g.lines,'линия','линии','линий')} 16 А${g.bigN?` + ${g.bigN} × 380 В`:''}`));
+  if(S.screens.length){L.push('');L.push('Экраны:');S.screens.forEach(s=>L.push(`— ${fmt(+s.w)}×${fmt(+s.h)} м, ${SCREEN_TYPES[s.type].n}`));}
+  L.push('');L.push('Оборудование:');
+  CATS.forEach(cat=>{const its=S.items[cat.id].filter(i=>+i.q>0);if(its.length)L.push(`${cat.name}: ${its.map(i=>`${i.n} × ${i.q}`).join(', ')}`);});
+  if(S.src==='gen') L.push(`\nВопросы: подтвердите выход генератора (${R.conn.n}) и длину кабеля ${S.cableLen} м.`);
+  if(S.src==='venue') L.push(`\nВопросы площадке: подтвердите выделенную мощность, какой разъём на щите, есть ли заземление и кто подключает.`);
+  return L.join('\n');
+}
+
+/* ---------- events ---------- */
+function commit(){save();render();}
+let rsT;window.addEventListener('resize',()=>{clearTimeout(rsT);rsT=setTimeout(render,150);});
+$('#formats').addEventListener('click',e=>{
+  const b=e.target.closest('[data-fmt]'); if(!b) return;
+  const R=RECIPES[b.dataset.fmt];
+  S.cfg={fmt:b.dataset.fmt,g:R.def.g,where:R.def.where,season:S.cfg.season,opts:{...R.def.opts}};
+  cfgChanged();
+});
+$('#guests').addEventListener('input',e=>{S.cfg.g=G_STEPS[+e.target.value];cfgChanged();});
+document.querySelectorAll('input[name="where"]').forEach(r=>r.addEventListener('change',e=>{S.cfg.where=e.target.value;cfgChanged();}));
+document.querySelectorAll('input[name="season"]').forEach(r=>r.addEventListener('change',e=>{S.cfg.season=e.target.value;cfgChanged();}));
+$('#opts').addEventListener('change',e=>{const k=e.target.dataset.opt;if(!k)return;S.cfg.opts[k]=e.target.checked?1:0;cfgChanged();});
+$('#applyCfg').addEventListener('click',applyCfg);
+
+document.querySelectorAll('input[name="src"]').forEach(r=>r.addEventListener('change',e=>{S.src=e.target.value;renderSource();commit();}));
+document.querySelectorAll('input[name="mode"]').forEach(r=>r.addEventListener('change',e=>{S.mode=e.target.value;commit();}));
+$('#margin').addEventListener('change',e=>{S.margin=+e.target.value;commit();});
+$('#soundSep').addEventListener('change',e=>{S.soundSep=e.target.checked;commit();});
+$('#venueVal').addEventListener('input',e=>{const v=Math.max(0,+e.target.value||0);if(S.venueUnit==='kw')S.venueKw=v;else S.venueA=v;commit();});
+$('#venuePh').addEventListener('change',e=>{S.venuePh=+e.target.value;commit();});
+$('#cableLen').addEventListener('input',e=>{S.cableLen=Math.max(1,+e.target.value||1);commit();});
+$('#hours').addEventListener('input',e=>{S.hours=Math.max(1,+e.target.value||1);commit();});
+document.querySelectorAll('[data-unit]').forEach(b=>b.addEventListener('click',()=>{S.venueUnit=b.dataset.unit;renderSource();commit();}));
+$('#addScreen').addEventListener('click',()=>{S.screens.push({w:4,h:2.5,type:S.cfg.where==='street'?'out':'in'});markManual();renderScreens();commit();});
+$('#screens').addEventListener('input',e=>{const el=e.target;if(el.dataset.si==null||el.tagName==='SELECT')return;const i=+el.dataset.si;S.screens[i][el.dataset.k]=Math.max(0,+el.value||0);markManual();updateScreen(i);commit();});
+$('#screens').addEventListener('change',e=>{const el=e.target;if(el.tagName==='SELECT'){const i=+el.dataset.si;S.screens[i].type=el.value;markManual();updateScreen(i);commit();}});
+$('#screens').addEventListener('click',e=>{const b=e.target.closest('[data-rmscreen]');if(!b)return;S.screens.splice(+b.dataset.rmscreen,1);markManual();renderScreens();commit();});
+const eq=$('#equip');
+eq.addEventListener('input',e=>{
+  const el=e.target;if(!el.dataset.k||!el.dataset.cat)return;
+  const it=S.items[el.dataset.cat][+el.dataset.idx];
+  if(el.dataset.k==='n')it.n=el.value;
+  else if(el.dataset.k==='w')it.w=Math.max(0,+el.value||0);
+  else it.q=Math.max(0,Math.round(+el.value||0));
+  const row=el.closest('.row');row.classList.toggle('on',+it.q>0);row.classList.toggle('three',+it.w>=5000);
+  markManual();commit();
+});
+eq.addEventListener('click',e=>{
+  const st=e.target.closest('[data-step]');
+  if(st){const it=S.items[st.dataset.cat][+st.dataset.idx];it.q=Math.max(0,(+it.q||0)+(+st.dataset.step));
+    const row=st.closest('.row');row.querySelector('[data-k="q"]').value=it.q;row.classList.toggle('on',it.q>0);markManual();commit();return;}
+  const add=e.target.closest('[data-add]');
+  if(add){const cid=add.dataset.add;S.items[cid].push({id:'c'+Date.now().toString(36),n:'Свой прибор',w:500,q:1,custom:true});renderEquip(true);
+    const d=eq.querySelector(`details[data-cat="${cid}"]`);d.open=true;const inp=d.querySelectorAll('input.nm');inp[inp.length-1]?.select();markManual();commit();return;}
+  const rm=e.target.closest('[data-rm]');
+  if(rm){S.items[rm.dataset.cat].splice(+rm.dataset.rm,1);renderEquip(true);markManual();commit();}
+});
+document.addEventListener('click',e=>{
+  const a=e.target.closest('a.term');if(!a)return;e.preventDefault();
+  const d=document.getElementById(a.dataset.g);if(!d)return;d.open=true;d.scrollIntoView({behavior:'smooth',block:'center'});
+  d.classList.add('flash');setTimeout(()=>d.classList.remove('flash'),1400);
+});
+$('#copyBtn').addEventListener('click',()=>{
+  const txt=summaryText(),msg=$('#copyMsg'),fb=$('#copyFallback');
+  const fallback=()=>{fb.hidden=false;fb.value=txt;fb.focus();fb.select();msg.textContent='Выделено — скопируйте вручную';};
+  try{navigator.clipboard.writeText(txt).then(()=>{msg.textContent='Скопировано';fb.hidden=true;setTimeout(()=>msg.textContent='',2500);},fallback);}catch(err){fallback();}
+});
+
+renderFormats();
+S=load();
+if(S){renderCfg();renderSource();renderScreens();renderEquip(false);render();
+  if(S.manual){$('#cfgMsg').textContent='Список техники правился вручную — шаблон не пересобирается сам.';}}
+else{S=JSON.parse(JSON.stringify(BASE));S.items=blankItems();S.screens=[];renderCfg();applyCfg();}
+</script>
+
+</body>
+</html>
